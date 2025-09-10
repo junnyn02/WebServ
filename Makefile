@@ -4,7 +4,7 @@ CXXFLAGS = -Wall -Wextra -Werror -g3 -std=c++98
 
 NAME = webserv
 
-SRCS := server.cpp
+SRCS := main.cpp serverCore.cpp
 
 OBJDIR = objects/
 INCDIR	= includes/

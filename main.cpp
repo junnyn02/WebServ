@@ -1,7 +1,8 @@
 #include "serverCore.hpp"
 
-int	main(char** argv, int argc)
+int	main(int, char**)
 {
-	
+	serverCore serv;
+	serv.connectAndReceive();
 	return (0);
 }
