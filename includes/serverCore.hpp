@@ -8,11 +8,22 @@
 #include <unistd.h>
 
 #define EXIT_FAILURE 1
+#define BUFFER_SIZE 30000
 #define PORT 8080
+
+typedef struct clientData
+{
+	char	buffer[BUFFER_SIZE];
+	int		clientSocket;
+} clientData;
 
 class serverCore
 {
 private:
+
+	int	serverSocket;
+	sockaddr_in sockAddr;
+
 public:
 
 	int			port;					// listening port, mandatory parameter
@@ -32,5 +43,10 @@ public:
 	serverCore();
 	~serverCore();
 	
+	void		startServer();
+
+	clientData	receiveRequest();
+	void		sendResponse(clientData, std::string);
+
 	int	connectAndReceive();
 };
