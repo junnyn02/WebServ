@@ -2,10 +2,6 @@
 
 #include <iostream>
 
-#ifndef MSG
-# define MSG 1
-#endif
-
 class ParserRequest
 {
     private:

@@ -23,6 +23,7 @@ OBJ_PATH	=	obj/
 SRC			:=	main.cpp
 SRC			+=	ResponseBuilder.cpp
 SRC			+=	test.cpp
+SRC			+=	utils.cpp
 
 SRCS		=	${addprefix $(SRC_PATH), $(SRC)}
 

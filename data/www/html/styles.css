@@ -1,0 +1,64 @@
+body {
+  background-color: rgb(243, 243, 243);
+  
+}
+
+.block {
+  margin: 80px;       /* Marge extérieure pour centrer et espacer */
+  padding: 40px;            /* Marge intérieure pour respirer */
+  background-color: rgb(224, 224, 224);  /* Fond blanc pour le contenu */
+}
+
+.lien-perso {
+  color: rgba(43, 43, 43, 0.63);
+  font-family: 'Roboto'; font-style: thin;
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+  text-decoration: none;
+}
+
+.lien-perso:hover {
+  text-decoration: underline;
+}
+
+.lien-ext {
+  color: rgb(32, 32, 32);
+  font-family: 'Roboto'; font-style: light;
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+  text-decoration: none;
+  padding-bottom: 30px;
+}
+
+.lien-ext:hover {
+  text-decoration: underline;
+}
+
+h1 {
+  color: rgb(32, 32, 32);
+  font-family: 'Roboto'; font-weight: bold;
+  padding: 10px;
+  text-align: center;
+}
+
+h2 {
+  color: rgb(32, 32, 32);
+  font-family: 'Roboto'; font-style: light;
+  margin-left: 30px;
+}
+
+p {
+  color: rgb(85, 85, 85);
+  font-family: 'Roboto'; font-style: thin;
+  margin-left: 30px;
+  margin-right: 30px;
+  text-align: justify;
+}
+
+img {
+  display: block;
+  margin: 20px auto;
+  width: 50%;
+}
