@@ -4,27 +4,32 @@
 #include <iostream>
 #include <vector>
 #include <map>
-
-typedef enum e_method
-{
-	GET,
-	POST,
-	DELETE
-} t_method;
+#include <string>
 
 class Request
 {
 	private:
-		t_method							_method;
+		std::string							_method;
 		std::string							_uri; //path?
 		int									_port;
 		std::map<std::string, std::string>	_headers;
+		int									_status;
 
-	public:
-		Request();
+		
 		Request(const Request&);
 		Request &operator=(const Request&);
+	public:
+		Request();
 		~Request();
+		void fillRequest(const std::string&);
+		void printRequest();
+
+		std::string& getMethod();
+		std::string& getURI();
+		int getPort();
+		int getStatus();
 };
+
+Request& createRequest(const std::string);
 
 #endif
