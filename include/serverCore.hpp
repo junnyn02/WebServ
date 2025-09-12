@@ -14,6 +14,7 @@
 typedef struct clientData
 {
 	char	buffer[BUFFER_SIZE];
+	size_t	size;
 	int		clientSocket;
 } clientData;
 
@@ -27,7 +28,7 @@ private:
 public:
 
 	int			port;					// listening port, mandatory parameter
-	// int			host[4];				// host or 127.0.0.1 by default
+	// int			host[4];				// host ip adress  127.0.0.1 ???
 	int			error_num;				//404 ?
 	int			client_max_body_size;	// max request body size in bytes
 	std::string	server_name;			// specify server_name, need to be added into /etc/hosts to work
@@ -38,7 +39,7 @@ public:
 	std::string	cgi_root;
 	std::string	cgi_path;
 	std::string	cgi_ext;
-	//allowed methods   allow_methods POST GET;
+	//allowed methods   allow_methods POST GET; (could do an int value and check binary (like 1==GET, 10==POST, 100==other etc))
 
 	serverCore();
 	~serverCore();
@@ -46,7 +47,7 @@ public:
 	void		startServer();
 
 	clientData	receiveRequest();
-	void		sendResponse(clientData, std::string);
+	void		sendResponse(clientData);
 
 	int	connectAndReceive();
 };

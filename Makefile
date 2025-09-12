@@ -1,29 +1,35 @@
-CXX = c++
+NAME		:=	webserv
 
-CXXFLAGS = -Wall -Wextra -Werror -g3 -std=c++98
+CXX			:=	c++
 
-NAME = webserv
+CXXFLAGS	:=	-Wall -Wextra -Werror -g3 -std=c++98
 
-SRCS := main.cpp serverCore.cpp
+OBJ_PATH	:=	objects/
+INC_PATH	:=	include/
+SRC_PATH	:=	srcs/
 
-OBJDIR = objects/
-INCDIR	= includes/
+SRC			:=	main.cpp 
+SRC			+=	serverCore.cpp
 
-OBJS = $(addprefix $(OBJDIR), $(SRCS:.cpp=.o))
+OBJ			:=	$(SRC:.cpp=.o)
 
-INCLUDE = -I $(INCDIR)
+SRCS		:=	$(addprefix $(SRC_PATH), $(SRC))
+
+OBJS 		:=	$(addprefix $(OBJ_PATH), $(OBJ))
+
+INCLUDE		:=	-I $(INC_PATH)
 
 all: $(NAME)
+
+$(OBJ_PATH)%.o: $(SRC_PATH)%.cpp
+	@mkdir -p $(OBJ_PATH)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -o $@
 
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $(NAME) $(OBJS)
 
-$(OBJDIR)%.o: %.cpp
-	@mkdir -p $(OBJDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -o $@
-
 clean:
-	rm -rf $(OBJDIR)
+	rm -rf $(OBJ_PATH)
 
 fclean: clean
 	rm -f $(NAME)
