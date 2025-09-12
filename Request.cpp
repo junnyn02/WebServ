@@ -1,30 +1,32 @@
 #include "include/Request.hpp"
 
-Request::Request(const Request& copy) { (void)copy; }
-Request& Request::operator=(const Request& copy) { (void)copy; return *this;}
-Request::~Request() {}
-
 Request::Request()
 {
 	_method = "";
 	_uri = "";
-	_port = 80;
+	_type = "";
+	_size = 0;
 	_status = 0;
 }
 
-std::string& Request::getMethod()
+const std::string& Request::getMethod()
 {
 	return (_method);
 }
 
-std::string& Request::getURI()
+const std::string& Request::getURI()
 {
 	return (_uri);
 }
 
-int Request::getPort()
+const std::string& Request::getType()
 {
-	return (_port);
+	return (_type);
+}
+
+int Request::getSize()
+{
+	return (_size);
 }
 
 int Request::getStatus()
@@ -36,17 +38,9 @@ void Request::printRequest()
 {
 	std::cout << "method : " << this->getMethod() << std::endl;
 	std::cout << "uri : " << this->getURI() << std::endl;
-	std::cout << "port : " << this->getPort() << std::endl;
+	std::cout << "size : " << this->getSize() << std::endl;
+	std::cout << "type : " << this->getType() << std::endl;
 	std::cout << "status : " << this->getStatus() << std::endl;
-	if (_headers.empty() == false)
-	{
-		std::map<std::string, std::string>::iterator it = _headers.begin();
-		while (it != _headers.end())
-		{
-			std::cout << it->first << ": " << it->second << std::endl;
-			it++;
-		}
-	}
 }
 
 void Request::fillRequest(const std::string& request)
@@ -73,11 +67,24 @@ void Request::fillRequest(const std::string& request)
 		std::cerr << "HTTP Version Not Supported\n";
 		return;
 	}
-	sp = request.find("\r\n", end);
-	if (sp < request.length())
+	size_t body = request.find("\r\n\r\n", end);
+	size_t size_key = request.rfind("Content-Length:", body);
+	if (size_key != std::string::npos)
 	{
-		std::cout << "Headers\n";
-		//parse headers
+		size_t line = request.find("\r\n", size_key);
+		size_key += 15;
+		std::string value = request.substr(size_key, line - size_key);
+		_size = atoi(value.c_str());
+	}
+	size_t type_key = request.rfind("Content-Type:", body);
+	if (type_key != std::string::npos)
+	{
+		size_t line = request.find("\r\n", type_key);
+		type_key += 12;
+		if (request[type_key] == ' ')
+			while (request[type_key] == ' ' && type_key < line)
+				type_key++;
+		_type = request.substr(type_key, line - type_key);
 	}
 }
 
