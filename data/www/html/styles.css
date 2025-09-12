@@ -1,17 +1,48 @@
+/* 🌙 Thème clair par défaut (root) */
+:root {
+  --bg-color: rgb(243, 243, 243);
+  --text-color: rgb(32, 32, 32);
+  --secondary-text: rgb(85, 85, 85);
+  --block-bg: rgb(224, 224, 224);
+  --link-color: rgba(43, 43, 43, 0.63);
+  --external-link-color: rgb(32, 32, 32);
+}
+
+/* 🌑 Thème sombre appliqué via body.dark-mode */
+body.dark-mode {
+  --bg-color: #121212;
+  --text-color: #f0f0f0;
+  --secondary-text: #cccccc;
+  --block-bg: #1e1e1e;
+  --link-color: #dddddd;
+  --external-link-color: #b2b2ff;
+}
+
+/* 🌐 Style global */
 body {
-  background-color: rgb(243, 243, 243);
-  
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Roboto', sans-serif;
 }
 
+/* 🔘 Bouton dark mode */
+button {
+  margin-top: 20px;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+/* 🧱 Bloc principal */
 .block {
-  margin: 80px;       /* Marge extérieure pour centrer et espacer */
-  padding: 40px;            /* Marge intérieure pour respirer */
-  background-color: rgb(224, 224, 224);  /* Fond blanc pour le contenu */
+  margin: 80px;
+  padding: 40px;
+  background-color: var(--block-bg);
 }
 
+/* 🔗 Lien contact perso */
 .lien-perso {
-  color: rgba(43, 43, 43, 0.63);
-  font-family: 'Roboto'; font-style: thin;
+  color: var(--link-color);
+  font-weight: 300;
   display: block;
   width: fit-content;
   margin: 0 auto;
@@ -22,9 +53,10 @@ body {
   text-decoration: underline;
 }
 
+/* 🔗 Lien externe */
 .lien-ext {
-  color: rgb(32, 32, 32);
-  font-family: 'Roboto'; font-style: light;
+  color: var(--external-link-color);
+  font-weight: 300;
   display: block;
   width: fit-content;
   margin: 0 auto;
@@ -36,29 +68,92 @@ body {
   text-decoration: underline;
 }
 
+/* 🧾 Titres */
 h1 {
-  color: rgb(32, 32, 32);
-  font-family: 'Roboto'; font-weight: bold;
+  color: var(--text-color);
+  font-weight: 700;
   padding: 10px;
   text-align: center;
 }
 
 h2 {
-  color: rgb(32, 32, 32);
-  font-family: 'Roboto'; font-style: light;
+  color: var(--text-color);
+  font-weight: 300;
   margin-left: 30px;
 }
 
+/* 📄 Paragraphe */
 p {
-  color: rgb(85, 85, 85);
-  font-family: 'Roboto'; font-style: thin;
+  color: var(--secondary-text);
+  font-weight: 300;
   margin-left: 30px;
   margin-right: 30px;
   text-align: justify;
 }
 
+/* 🖼️ Image */
 img {
   display: block;
   margin: 20px auto;
   width: 50%;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+/* Style du switch (curseur) */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Curseur visuel */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+/* Position activée (curseur à droite + fond changé) */
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:checked + .slider::before {
+  transform: translateX(22px);
+}
+
+/* Libellé à droite */
+.toggle-label {
+  color: var(--text-color);
+  font-size: 16px;
+  font-weight: 400;
 }

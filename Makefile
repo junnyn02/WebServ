@@ -6,7 +6,7 @@
 #    By: junguyen <junguyen@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/03/21 10:37:37 by junguyen          #+#    #+#              #
-#    Updated: 2025/07/11 14:17:04 by junguyen         ###   ########.fr        #
+#    Updated: 2025/09/12 16:47:27 by junguyen         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,7 +31,7 @@ OBJ			=	$(SRC:.cpp=.o)
 
 OBJS		= 	${addprefix $(OBJ_PATH), $(OBJ)}
 
-INCLUDES 	= 	-I incs/
+INCLUDES 	= 	-I include/
 
 RM			=	 rm -rfd
 
@@ -54,9 +54,6 @@ $(NAME): $(OBJS)
 		$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME) $(INCLUDES)
 		@echo $(GREEN)$(NAME) compiled!$(NO_STYLE)
 
-nomsg:	CXXFLAGS += -DMSG=0
-nomsg:	clean $(NAME)
-
 clean:	
 		@$(RM) $(OBJ_PATH)
 		@echo $(YELLOW)object clean! $(NO_STYLE)
@@ -68,4 +65,4 @@ fclean: clean
 re: fclean all
 		@echo $(PURPLE)$(NAME) reloaded!$(NO_STYLE)
 
-.PHONY: all clean fclean re nomsg
+.PHONY: all clean fclean re

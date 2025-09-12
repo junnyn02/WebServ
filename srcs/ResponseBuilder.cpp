@@ -2,8 +2,6 @@
 
 ResponseBuilder::ResponseBuilder(const ParserRequest &request) : _request(request)
 {
-    if (MSG)
-        std::cout << "Default constructor called" << std::endl;
     _mime.insert(std::pair<std::string, std::string>(".htm", "text/html"));
     _mime.insert(std::pair<std::string, std::string>(".html", "text/html"));
     _mime.insert(std::pair<std::string, std::string>(".css", "text/css"));
@@ -18,11 +16,9 @@ ResponseBuilder::ResponseBuilder(const ParserRequest &request) : _request(reques
 
 ResponseBuilder::~ResponseBuilder()
 {
-    if (MSG)
-        std::cout << "Default destructor called" << std::endl;
 }
 
-std::string  ResponseBuilder::getCode(void) const
+const std::string  ResponseBuilder::getCode(void) const
 {
     return (this->_code);
 }
@@ -36,7 +32,6 @@ void    ResponseBuilder::exec(void)
 {
     if (_request.getMethod() == "GET")
     {
-        std::cout << "GET METHOD" << std::endl;
         tryGet();
     }
     std::string response, body;
@@ -59,7 +54,10 @@ void    ResponseBuilder::tryGet(void)
     else if (!infile.is_open())
         this->_code = "403 Forbidden";
     else
+    {
         this->_code = "200 OK";
+        infile.close();
+    }
 }
 
 const std::string    ResponseBuilder::getDate(void) const
@@ -73,7 +71,7 @@ const std::string    ResponseBuilder::getDate(void) const
 
 const std::string   ResponseBuilder::getType(void) const
 {
-    if (_code == "404 Not Found")
+    if (_code == "404 Not Found" || _code == "403 Forbidden")
         return ("text/html");
     std::string end;
     std::size_t found = _request.getPath().find('.');
@@ -94,11 +92,24 @@ const std::string   ResponseBuilder::getBody(void) const
         return ("<html><body><h1>404 - Page Not Found</h1></body></html>");
     if (_code == "403 Forbidden")
         return ("<html><body><h1>403 - Fordbidden</h1></body></html>");
-    
-    std::ifstream   infile(_request.getPath().c_str());
-    std::string     line;
-    char            c;
-	while(infile.get(c))
-		line.append(1, c);
-    return (line);
+    std::size_t found = _type.find("image");
+    if (found == std::string::npos)
+    {
+        std::ifstream   infile(_request.getPath().c_str());
+        std::string     line;
+        char            c;
+        while(infile.get(c))
+            line.append(1, c);
+        infile.close();
+        return (line);
+    }
+    std::string media;
+    std::ifstream   infile(_request.getPath().c_str(), std::ios::binary);
+    infile.seekg (0, infile.end);
+    unsigned long length = infile.tellg();
+    infile.seekg (0, infile.beg);
+    media.resize(length);
+    infile.read(&media[0], media.size());
+    infile.close();
+    return (media);
 }

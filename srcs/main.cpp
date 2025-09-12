@@ -2,7 +2,8 @@
 
 int main(int ac, char **av)
 {
-    (void)ac;
+    if (ac != 2)
+        return 0;
     ParserRequest get("GET", av[1]);
     ResponseBuilder a(get);
     a.exec();

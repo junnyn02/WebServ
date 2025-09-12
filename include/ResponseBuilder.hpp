@@ -14,11 +14,12 @@ class ResponseBuilder
         ResponseBuilder(const ParserRequest &);
         ~ResponseBuilder(void);
 
-        std::string getCode(void) const;
         std::string buildResponse(void);
-
+        
         void                exec(void);
         void                tryGet(void);
+        
+        const std::string getCode(void) const;
         const std::string   getDate(void) const;
         const std::string   getType(void) const;
         const std::string   getBody(void) const;
