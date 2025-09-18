@@ -1,4 +1,5 @@
 #include "serverCore.hpp"
+#include "Request.hpp"
 
 int	main(int, char**)
 {
@@ -15,6 +16,8 @@ int	main(int, char**)
 		for (size_t i = hello.length(); i < BUFFER_SIZE; i++)
 			data.buffer[i] = 0;
 		data.size = hello.length();
+		Request fresh(data);
+		fresh.printRequest();
 		serv.sendResponse(data);
 	}
 	return (0);

@@ -12,12 +12,15 @@ class Request
 	private:
 		std::string							_method;
 		std::string							_uri;
-		std::string							_type;
-		int									_size;
+		std::string							_type; // content type
+		std::string							_body; //use string or char* ?
+		int									_size; //content size
 		int									_status;
-	public:
 		Request();
-		void fillRequest(const std::string&);
+	public:
+		Request(const struct clientData&);
+		//void fillRequest(const std::string&);
+		void fillRequest(const struct clientData&);
 		void printRequest();
 
 		const std::string& getMethod();
@@ -26,7 +29,5 @@ class Request
 		int getSize();
 		int getStatus();
 };
-
-Request& createRequest(const std::string);
 
 #endif
