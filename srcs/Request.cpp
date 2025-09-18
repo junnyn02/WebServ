@@ -1,4 +1,5 @@
 #include "../include/Request.hpp"
+#include "../include/serverCore.hpp"
 
 Request::Request()
 {
@@ -7,6 +8,17 @@ Request::Request()
 	_type = "";
 	_size = 0;
 	_status = 0;
+}
+
+Request::Request(const clientData& data)
+{
+	_method = "";
+	_uri = "";
+	_type = "";
+	_body = "";
+	_size = data.size;
+	_status = 0;
+	this->fillRequest(data);
 }
 
 const std::string& Request::getMethod()
@@ -36,6 +48,7 @@ int Request::getStatus()
 
 void Request::printRequest()
 {
+	std::cout << "Request :\n";
 	std::cout << "method : " << this->getMethod() << std::endl;
 	std::cout << "uri : " << this->getURI() << std::endl;
 	std::cout << "size : " << this->getSize() << std::endl;
@@ -43,10 +56,10 @@ void Request::printRequest()
 	std::cout << "status : " << this->getStatus() << std::endl;
 }
 
-void Request::fillRequest(const std::string& request)
+void Request::fillRequest(const clientData& data)
 {
-	//ignore if request line starts with CRLF (4.1) ?
-	size_t sp = request.find(" ");
+	std::string request = data.buffer;
+	size_t sp = request.find(" ", 0);
 	std::string method = request.substr(0, sp);
 	if (method != "GET" && method != "POST" && method != "DELETE")
 	{
@@ -60,7 +73,7 @@ void Request::fillRequest(const std::string& request)
 	_uri = request.substr(sp, (end - sp) );
 	end++;
 	sp = request.find(13, end);
-	if (request.substr(end, (sp -end)) != "HTTP/1.1")
+	if (request.substr(end, (sp - end)) != "HTTP/1.1")
 	{
 		_status = 505;
 		std::cout << request.substr(end, sp) << std::endl;
@@ -86,5 +99,5 @@ void Request::fillRequest(const std::string& request)
 				type_key++;
 		_type = request.substr(type_key, line - type_key);
 	}
+	_body = request.substr(body + 4, data.size - body); //check
 }
-
