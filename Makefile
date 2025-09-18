@@ -4,11 +4,15 @@ CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -g
 
 NAME = Webserv
 
-SRCS = main.cpp Request.cpp
+SRC_PATH = srcs/
+
+SRC = main.cpp Request.cpp
+
+SRCS = ${addprefix $(SRC_PATH), $(SRC)}
 
 OBJDIR = objects
 
-OBJS = $(addprefix $(OBJDIR)/, $(SRCS:.cpp=.o))
+OBJS = $(addprefix $(OBJDIR)/, $(SRC:.cpp=.o))
 
 INCLUDE = -I include/
 
@@ -17,7 +21,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $(NAME) $(OBJS)
 
-$(OBJDIR)/%.o: %.cpp
+$(OBJDIR)/%.o:  $(SRC_PATH)%.cpp
 	@mkdir -p $(OBJDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -o $@
 
