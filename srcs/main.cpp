@@ -1,10 +1,21 @@
-#include "../include/Request.hpp"
+#include "serverCore.hpp"
 
-int main()
+int	main(int, char**)
 {
-	Request test;
-	std::string request = "GET /index.html HTTP/1.1\r\n test idk \r\nContent-Type: HTML\r\nContent-Length:1200\r\n\r\n";
-	test.fillRequest(request);
-	test.printRequest();
-	return 0;
+	serverCore serv;
+
+	serv.startServer();
+
+	while (1)
+	{
+		clientData data = serv.receiveRequest();
+		std::string hello("HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!");
+		for (size_t i = 0; i < hello.length(); i++)
+			data.buffer[i] = hello.c_str()[i];
+		for (size_t i = hello.length(); i < BUFFER_SIZE; i++)
+			data.buffer[i] = 0;
+		data.size = hello.length();
+		serv.sendResponse(data);
+	}
+	return (0);
 }

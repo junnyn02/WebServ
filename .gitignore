@@ -2,6 +2,8 @@
 *.d
 
 # Compiled Object files
+objects
+objects/*
 *.slo
 *.lo
 *.o
@@ -32,7 +34,11 @@
 *.a
 *.lib
 
+# Hidden files and directories
+.*
+
 # Executables
+webserv
 *.exe
 *.out
 *.app
