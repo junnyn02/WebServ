@@ -36,6 +36,11 @@ const std::string& Request::getType()
 	return (_type);
 }
 
+const std::string& Request::getBody()
+{
+	return (_body);
+}
+
 int Request::getSize()
 {
 	return (_size);
@@ -48,16 +53,35 @@ int Request::getStatus()
 
 void Request::printRequest()
 {
+	if (_size == 0)
+		return;
 	std::cout << "Request :\n";
 	std::cout << "method : " << this->getMethod() << std::endl;
 	std::cout << "uri : " << this->getURI() << std::endl;
+	std::cout << "body : " << this->getBody() << std::endl;
 	std::cout << "size : " << this->getSize() << std::endl;
 	std::cout << "type : " << this->getType() << std::endl;
 	std::cout << "status : " << this->getStatus() << std::endl;
 }
 
+/* To-do :
+ - handle relative vs absolute uri = normalize, how?
+ - handle redirections -> defined in config file
+ - handle chunking
+ - check for forbidden characters in uri
+ - check leading / trailing whitespace, are empty lines allowed?
+ - check for wrong CRLF
+ - check if uri too long = 8000 bytes/char max for request line -> check!
+ - check if no content length and type for POST request
+ - check if body too long -> define limit
+ - check for unsupported media type
+ - refactor fillRequest for readability + modularity
+*/
+
 void Request::fillRequest(const clientData& data)
 {
+	if (data.size == 0)
+		return;
 	std::string request = data.buffer;
 	size_t sp = request.find(" ", 0);
 	std::string method = request.substr(0, sp);
@@ -87,7 +111,7 @@ void Request::fillRequest(const clientData& data)
 		size_t line = request.find("\r\n", size_key);
 		size_key += 15;
 		std::string value = request.substr(size_key, line - size_key);
-		_size = atoi(value.c_str());
+		_size = atoi(value.c_str());									// risk of int overflow?
 	}
 	size_t type_key = request.rfind("Content-Type:", body);
 	if (type_key != std::string::npos)
@@ -99,5 +123,5 @@ void Request::fillRequest(const clientData& data)
 				type_key++;
 		_type = request.substr(type_key, line - type_key);
 	}
-	_body = request.substr(body + 4, data.size - body); //check
+	_body = request.substr(body + 4, data.size - body);
 }

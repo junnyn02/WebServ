@@ -26,6 +26,7 @@ class Request
 		const std::string& getMethod();
 		const std::string& getURI();
 		const std::string& getType();
+		const std::string& getBody();
 		int getSize();
 		int getStatus();
 };

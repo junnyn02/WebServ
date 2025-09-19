@@ -11,7 +11,7 @@ int	main(int, char**)
 	{
 		clientData data = serv.receiveRequest();
 		Request fresh(data);
-		fresh.printRequest();
+		fresh.printRequest(); // remove later
 		std::string hello("HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!");
 		for (size_t i = 0; i < hello.length(); i++)
 			data.buffer[i] = hello.c_str()[i];
