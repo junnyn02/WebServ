@@ -13,14 +13,16 @@ class Request
 		std::string							_method;
 		std::string							_uri;
 		std::string							_type; // content type
-		std::string							_body; //use string or char* ?
-		int									_size; //content size
+		std::string							_body; // use string or char* ?
+		int									_size; // content size
 		int									_status;
 		Request();
 	public:
 		Request(const struct clientData&);
-		//void fillRequest(const std::string&);
 		void fillRequest(const struct clientData&);
+		int parseRequestLine(const std::string&);
+		int parseHeaders(const std::string&);
+		void parseBody(const std::string&);
 		void printRequest();
 
 		const std::string& getMethod();
