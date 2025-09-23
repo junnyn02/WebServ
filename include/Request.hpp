@@ -26,7 +26,7 @@ class Request
 		void printRequest();
 
 		const std::string& getMethod();
-		const std::string& getURI();
+		const std::string& getURI() const;
 		const std::string& getType();
 		const std::string& getBody();
 		int getSize();

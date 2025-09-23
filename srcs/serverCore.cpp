@@ -41,7 +41,7 @@ clientData	serverCore::receiveRequest()
 {
 	clientData data;
 	unsigned long addrlen = sizeof(sockaddr_in);
-
+	// memset(&data, 0, sizeof(clientData));
 	data.clientSocket = accept(serverSocket, (struct sockaddr*)&sockAddr, (socklen_t*)&addrlen);
 	if (data.clientSocket < 0) {
 		std::cout << "Failed to grab connection." << std::endl;
@@ -50,7 +50,7 @@ clientData	serverCore::receiveRequest()
 
 	// use recv !!!!
 	size_t valread = recv(data.clientSocket, data.buffer, BUFFER_SIZE, 0); // do we need flags ??? MSG_DONTWAIT ?
-	std::cout << data.buffer << std::endl;
+	std::cout << "data.buffer:\n" << data.buffer << std::endl << std::endl;
 	if(valread == 0)
 		std::cout << "No bytes are there to read" << std::endl;
 	data.size = valread;

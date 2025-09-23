@@ -26,7 +26,7 @@ const std::string& Request::getMethod()
 	return (_method);
 }
 
-const std::string& Request::getURI()
+const std::string& Request::getURI() const
 {
 	return (_uri);
 }

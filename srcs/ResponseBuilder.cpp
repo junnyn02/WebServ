@@ -1,6 +1,8 @@
 #include "ResponseBuilder.hpp"
 
-ResponseBuilder::ResponseBuilder(const ParserRequest &request) : _request(request)
+//remplacer le root par le dossier reel ou est l'index, ex: http://localhost:8080/home/junguyen/Desktop/C05/WebServ/data/www/html/index.html
+
+ResponseBuilder::ResponseBuilder(const Request &request) : _request(request)
 {
     _mime.insert(std::pair<std::string, std::string>(".htm", "text/html"));
     _mime.insert(std::pair<std::string, std::string>(".html", "text/html"));
@@ -28,7 +30,7 @@ std::string ResponseBuilder::buildResponse(void)
     return "build";
 }
 
-void    ResponseBuilder::exec(void)
+const std::string    ResponseBuilder::exec(void)
 {
     if (_request.getMethod() == "GET")
     {
@@ -43,14 +45,18 @@ void    ResponseBuilder::exec(void)
     response.append("Content-Length: " + size_t_to_string(body.length()) + "\r\n");
     response.append("\r\n" + body);
     std::cout << "RESPONSE =" << std::endl << response << std::endl;
+    return response;
 }
 
 void    ResponseBuilder::tryGet(void)
 {
     struct stat buffer;
-    std::ifstream infile(this->_request.getPath().c_str());
-    if (stat(_request.getPath().c_str(), &buffer) != 0)
+    std::ifstream infile(this->_request.getURI().c_str());
+    if (stat(_request.getURI().c_str(), &buffer) != 0)
+    {
+        std::cout << "URI: " << this->_request.getURI().c_str() << std::endl;
         this->_code = "404 Not Found";
+    }
     else if (!infile.is_open())
         this->_code = "403 Forbidden";
     else
@@ -58,6 +64,7 @@ void    ResponseBuilder::tryGet(void)
         this->_code = "200 OK";
         infile.close();
     }
+    std::cout << "code: " << this->_code << std::endl;
 }
 
 const std::string    ResponseBuilder::getDate(void) const
@@ -74,9 +81,9 @@ const std::string   ResponseBuilder::getType(void) const
     if (_code == "404 Not Found" || _code == "403 Forbidden")
         return ("text/html");
     std::string end;
-    std::size_t found = _request.getPath().find('.');
+    std::size_t found = _request.getURI().find('.');
     if (found != std::string::npos)
-        end = _request.getPath().substr(found, _request.getPath().length());
+        end = _request.getURI().substr(found, _request.getURI().length());
     std::map<std::string, std::string>::const_iterator it = _mime.begin();
     for (; it != _mime.end(); ++it)
     {
@@ -95,7 +102,7 @@ const std::string   ResponseBuilder::getBody(void) const
     std::size_t found = _type.find("image");
     if (found == std::string::npos)
     {
-        std::ifstream   infile(_request.getPath().c_str());
+        std::ifstream   infile(_request.getURI().c_str());
         std::string     line;
         char            c;
         while(infile.get(c))
@@ -104,7 +111,7 @@ const std::string   ResponseBuilder::getBody(void) const
         return (line);
     }
     std::string media;
-    std::ifstream   infile(_request.getPath().c_str(), std::ios::binary);
+    std::ifstream   infile(_request.getURI().c_str(), std::ios::binary);
     infile.seekg (0, infile.end);
     unsigned long length = infile.tellg();
     infile.seekg (0, infile.beg);
