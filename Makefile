@@ -1,68 +1,40 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: junguyen <junguyen@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/03/21 10:37:37 by junguyen          #+#    #+#              #
-#    Updated: 2025/09/12 16:47:27 by junguyen         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
+NAME		:=	webserv
 
-NAME		=	webserv
+CXX			:=	c++
 
-CXX			=	c++
+CXXFLAGS	:=	-Wall -Wextra -Werror -g3 -std=c++98
 
-CXXFLAGS	=	-Wall -Werror -Wextra -g -std=c++98
+OBJ_PATH	:=	objects/
+INC_PATH	:=	include/
+SRC_PATH	:=	srcs/
 
-SRC_PATH	=	srcs/
+SRC			:=	main.cpp 
+SRC			+=	serverCore.cpp
+SRC			+=	Request.cpp
 
-OBJ_PATH	=	obj/
+OBJ			:=	$(SRC:.cpp=.o)
 
-SRC			:=	main.cpp
-SRC			+=	ResponseBuilder.cpp
-SRC			+=	test.cpp
-SRC			+=	utils.cpp
+SRCS		:=	$(addprefix $(SRC_PATH), $(SRC))
 
-SRCS		=	${addprefix $(SRC_PATH), $(SRC)}
+OBJS 		:=	$(addprefix $(OBJ_PATH), $(OBJ))
 
-OBJ			=	$(SRC:.cpp=.o)
+INCLUDE		:=	-I $(INC_PATH)
 
-OBJS		= 	${addprefix $(OBJ_PATH), $(OBJ)}
-
-INCLUDES 	= 	-I include/
-
-RM			=	 rm -rfd
-
-RED			:=	"\033[0;31m\033[1m"
-GREEN		:=	"\033[0;32m\033[1m"
-BLUE		:=	"\033[0;34m\033[1m"
-YELLOW		:=	"\033[1;33m\033[1m"
-PURPLE		:=	"\033[0;35m\033[1m"
-CYAN		:=	"\033[0;36m\033[1m"
-WHITE		:=	"\033[0;37m\033[1m"
-NO_STYLE	:=	"\033[0m"
-
-all:		$(NAME)
+all: $(NAME)
 
 $(OBJ_PATH)%.o: $(SRC_PATH)%.cpp
-			@mkdir -p $(dir $@)
-			$(CXX) $(CXXFLAGS) $(INCLUDES) -c  $< -o $@
+	@mkdir -p $(OBJ_PATH)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -o $@
 
 $(NAME): $(OBJS)
-		$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME) $(INCLUDES)
-		@echo $(GREEN)$(NAME) compiled!$(NO_STYLE)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $(NAME) $(OBJS)
 
-clean:	
-		@$(RM) $(OBJ_PATH)
-		@echo $(YELLOW)object clean! $(NO_STYLE)
+clean:
+	rm -rf $(OBJ_PATH)
 
 fclean: clean
-		@$(RM) $(NAME)
-		@echo $(RED)$(NAME) deleted!$(NO_STYLE)
+	rm -f $(NAME)
 
 re: fclean all
-		@echo $(PURPLE)$(NAME) reloaded!$(NO_STYLE)
 
 .PHONY: all clean fclean re

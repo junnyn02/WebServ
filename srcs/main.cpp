@@ -1,11 +1,24 @@
-#include "ResponseBuilder.hpp"
+#include "serverCore.hpp"
+#include "Request.hpp"
 
-int main(int ac, char **av)
+int	main(int, char**)
 {
-    if (ac != 2)
-        return 0;
-    ParserRequest get("GET", av[1]);
-    ResponseBuilder a(get);
-    a.exec();
-    return 0;
+	serverCore serv;
+
+	serv.startServer();
+
+	while (1)
+	{
+		clientData data = serv.receiveRequest();
+		Request fresh(data);
+		fresh.printRequest(); // remove later
+		std::string hello("HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!");
+		for (size_t i = 0; i < hello.length(); i++)
+			data.buffer[i] = hello.c_str()[i];
+		for (size_t i = hello.length(); i < BUFFER_SIZE; i++)
+			data.buffer[i] = 0;
+		data.size = hello.length();
+		serv.sendResponse(data);
+	}
+	return (0);
 }
