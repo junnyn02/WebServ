@@ -74,8 +74,6 @@ int	main(int, char**)
 		Request fresh(data);
 		ResponseBuilder	response(fresh);
 		fresh.printRequest(); // remove later
-		//reponse requete
-		// std::string hello("HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!");
 		std::string hello = response.exec();
 		for (size_t i = 0; i < hello.length(); i++)
 			data.buffer[i] = hello.c_str()[i];

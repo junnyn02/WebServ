@@ -41,7 +41,6 @@ clientData	serverCore::receiveRequest()
 {
 	clientData data;
 	unsigned long addrlen = sizeof(sockaddr_in);
-	// memset(&data, 0, sizeof(clientData));
 	data.clientSocket = accept(serverSocket, (struct sockaddr*)&sockAddr, (socklen_t*)&addrlen);
 	if (data.clientSocket < 0) {
 		std::cout << "Failed to grab connection." << std::endl;

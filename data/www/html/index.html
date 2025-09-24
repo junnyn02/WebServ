@@ -18,10 +18,32 @@
             J’embrasse tendrement ma mère qui a tant fais pour moi.
             Ou je vais-je ne sais pas mais dieu guide mes pas.
             Et je me sens quelque part être quelqu’un à part.</p>
+        <!-- 🖼️ Galerie d'images avec formulaire de type POST -->
+        <div class="gallery-wrapper">
+            <button class="arrow left" aria-label="Scroll left">&lt;</button>
+            <!-- ✅ Formulaire d'upload vers ton serveur -->
+            <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+                <div id="gallery-container">
+                    <!-- 🟩 Boîte + pour ajouter une image -->
+                    <div class="image-box add-box" onclick="document.getElementById('fileInput').click();">
+                        <span>+</span>
+                        <input 
+                            type="file" 
+                            id="fileInput" 
+                            name="image" 
+                            accept="image/*" 
+                            style="display: none;" 
+                            onchange="handleUpload()" 
+                            required
+                        >
+                    </div>
+                </div>
+            </form>
+            <button class="arrow right" aria-label="Scroll right">&gt;</button>
+        </div>
         <div id="skills-container"></div>
         <div id="projects-container"></div>
-        <div id="testimonials-container"></div>
-        <a href="contact.html" class="lien-perso">Contact</a>
+        <a href="contact.html" class="lien-perso">Contact me here</a>
          <!-- ✅ Switch Dark Mode -->
         <div class="toggle-container">
         <label class="switch">
@@ -31,9 +53,18 @@
         <span class="toggle-label">Mode sombre</span>
         </div>
     </div>
-
     <!-- ✅ Script dark mode -->
-    <!-- <script src="data.js"></script> -->
+    <script src="data.js"></script>
     <script src="darkmode.js"></script>
+    <script>
+    function handleUpload() {
+        const fileInput = document.getElementById("fileInput");
+        const form = document.getElementById("uploadForm");
+
+        if (fileInput.files.length > 0) {
+        form.submit(); // ⬆️ Envoie le fichier au serveur
+        }
+    }
+    </script>
 </body>
 </html>

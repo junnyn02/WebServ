@@ -14,8 +14,6 @@ class ResponseBuilder
     public:
         ResponseBuilder(const Request &);
         ~ResponseBuilder(void);
-
-        std::string buildResponse(void);
         
         const std::string   exec(void);
         void                tryGet(void);

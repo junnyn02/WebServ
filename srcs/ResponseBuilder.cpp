@@ -25,11 +25,6 @@ const std::string  ResponseBuilder::getCode(void) const
     return (this->_code);
 }
 
-std::string ResponseBuilder::buildResponse(void)
-{
-    return "build";
-}
-
 const std::string    ResponseBuilder::exec(void)
 {
     if (_request.getMethod() == "GET")
