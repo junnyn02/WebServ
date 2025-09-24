@@ -39,26 +39,76 @@ const std::string    ResponseBuilder::exec(void)
     body = getBody();
     response.append("Content-Length: " + size_t_to_string(body.length()) + "\r\n");
     response.append("\r\n" + body);
-    std::cout << "RESPONSE =" << std::endl << response << std::endl;
+    // std::cout << "RESPONSE =" << std::endl << response << std::endl;
     return response;
+}
+
+bool isDirectoryAccessible(const std::string& path)
+{
+    DIR* dir = opendir(path.c_str());
+    if (dir)
+    {
+        closedir(dir);
+        return true; // On peut ouvrir et lire le dossier
+    }
+    return false; // Permission refusée ou erreur
+}
+
+void    ResponseBuilder::isDir(const std::string &path)
+{
+    struct stat buffer;
+    if (isDirectoryAccessible(path))
+        {
+            std::string indexPath = path + "/index.html";
+            if (stat(indexPath.c_str(), &buffer) == 0 && S_ISREG(buffer.st_mode))
+            {
+                std::ifstream infile(indexPath.c_str());
+                if (infile.is_open())
+                {
+                    this->_code = "200 OK";
+                    infile.close();
+                    _request.setURI(indexPath); // Rediriger vers index.html
+                }
+                else
+                    this->_code = "403 Forbidden";
+            }
+            else
+                this->_code = "404 Not Found"; // Pas de index.html
+        }
+        else
+            this->_code = "404 Not Found";
+}
+
+void    ResponseBuilder::isFile(const std::string &path)
+{
+    std::ifstream infile(path.c_str());
+    if (infile.is_open())
+    {
+        this->_code = "200 OK";
+        infile.close();
+    }
+    else
+        this->_code = "403 Forbidden";
 }
 
 void    ResponseBuilder::tryGet(void)
 {
     struct stat buffer;
-    std::ifstream infile(this->_request.getURI().c_str());
-    if (stat(_request.getURI().c_str(), &buffer) != 0)
+    std::string dir = getDir();
+    _request.setURI(dir + "/data/www/html" + _request.getURI()); //modifier selon le parsing du fichier conf
+    const std::string& path = _request.getURI();
+    std::ifstream infile(path.c_str());
+    if (stat(path.c_str(), &buffer) != 0)
     {
-        std::cout << "URI: " << this->_request.getURI().c_str() << std::endl;
+        std::cout << "URI not found: " << path << std::endl;
         this->_code = "404 Not Found";
     }
-    else if (!infile.is_open())
-        this->_code = "403 Forbidden";
+    else if (S_ISDIR(buffer.st_mode))
+        isDir(path);
+    else if (S_ISREG(buffer.st_mode))
+        isFile(path);
     else
-    {
-        this->_code = "200 OK";
-        infile.close();
-    }
+        this->_code = "403 Forbidden"; // Ni fichier ni dossier
     std::cout << "code: " << this->_code << std::endl;
 }
 
@@ -114,4 +164,13 @@ const std::string   ResponseBuilder::getBody(void) const
     infile.read(&media[0], media.size());
     infile.close();
     return (media);
+}
+
+const std::string   ResponseBuilder::getDir(void) const
+{
+    char buffer[1096];
+    if (getcwd(buffer, sizeof(buffer)) != NULL)
+        return std::string(buffer);
+    else
+        return std::string("Error");
 }

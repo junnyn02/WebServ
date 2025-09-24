@@ -31,6 +31,8 @@ class Request
 		const std::string& getBody();
 		int getSize();
 		int getStatus();
+
+		void	setURI(const std::string &);
 };
 
 #endif

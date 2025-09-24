@@ -168,3 +168,8 @@ void Request::fillRequest(const clientData& data)
 	_body = request.substr(empty + 2, data.size - empty);
 	//parse body?
 }
+
+void	Request::setURI(const std::string &new_str)
+{
+	this->_uri = new_str;
+}
