@@ -31,6 +31,8 @@ const std::string    ResponseBuilder::exec(void)
     {
         tryGet();
     }
+    else if (_request.getMethod() == "POST")
+        tryPost();
     std::string response, body;
     response = "HTTP/1.1 " + getCode() + "\r\n";
     response.append("Server: webserv\nDate: " + getDate() + "\r\n");
@@ -110,6 +112,11 @@ void    ResponseBuilder::tryGet(void)
     else
         this->_code = "403 Forbidden"; // Ni fichier ni dossier
     std::cout << "code: " << this->_code << std::endl;
+}
+
+void    ResponseBuilder::tryPost(void)
+{
+    std::cout << "DO SMTHG" << std::endl;
 }
 
 const std::string    ResponseBuilder::getDate(void) const

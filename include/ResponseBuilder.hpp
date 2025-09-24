@@ -17,6 +17,7 @@ class ResponseBuilder
         
         const std::string   exec(void);
         void                tryGet(void);
+        void                tryPost(void);
         void                isDir(const std::string &);
         void                isFile(const std::string &);
         
