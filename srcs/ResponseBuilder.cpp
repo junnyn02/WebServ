@@ -39,7 +39,7 @@ const std::string    ResponseBuilder::exec(void)
     body = getBody();
     response.append("Content-Length: " + size_t_to_string(body.length()) + "\r\n");
     response.append("\r\n" + body);
-    std::cout << "RESPONSE =" << std::endl << response << std::endl;
+    //std::cout << "RESPONSE =" << std::endl << response << std::endl;
     return response;
 }
 

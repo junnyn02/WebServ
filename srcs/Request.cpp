@@ -65,11 +65,10 @@ void Request::printRequest()
 	std::cout << "method : " << this->getMethod() << std::endl;
 	std::cout << "uri : " << this->getURI() << std::endl;
 	std::cout << "message length : " << this->getLength() << std::endl;
-	std::cout << "body : " << this->getBody() << std::endl;
 	std::cout << "size : " << this->getSize() << std::endl;
 	std::cout << "type : " << this->getType() << std::endl;
 	std::cout << "status : " << this->getStatus() << std::endl;
-	std::cout << "headers :\n";
+	std::cout << GREEN << "headers :\n" << RESET;
 	std::map<std::string, std::string>::iterator it = _headers.begin();
 	while (it != _headers.end())
 	{
@@ -77,6 +76,7 @@ void Request::printRequest()
 		it++;
 	}
 	std::cout << std::endl;
+	std::cout << BOLDRED << "Body:\n" << RESET << getBody() << std::endl;
 }
 
 /* To-do :
