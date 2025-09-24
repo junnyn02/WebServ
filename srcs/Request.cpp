@@ -42,6 +42,11 @@ const std::string& Request::getBody() const
 	return (_body);
 }
 
+int Request::getLength() const
+{
+	return (_length);
+}
+
 int Request::getSize() const
 {
 	return (_size);
@@ -59,6 +64,7 @@ void Request::printRequest()
 	std::cout << BOLDRED<<  "Request\n" << RESET;
 	std::cout << "method : " << this->getMethod() << std::endl;
 	std::cout << "uri : " << this->getURI() << std::endl;
+	std::cout << "message length : " << this->getLength() << std::endl;
 	std::cout << "body : " << this->getBody() << std::endl;
 	std::cout << "size : " << this->getSize() << std::endl;
 	std::cout << "type : " << this->getType() << std::endl;

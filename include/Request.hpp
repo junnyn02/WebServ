@@ -36,6 +36,7 @@ class Request
 		const std::string& getURI() const;
 		const std::string& getType() const;
 		const std::string& getBody() const;
+		int getLength() const;
 		int getSize() const;
 		int getStatus() const;
 };
