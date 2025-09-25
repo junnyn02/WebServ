@@ -10,6 +10,9 @@ SRC_PATH	:=	srcs/
 
 SRC			:=	main.cpp 
 SRC			+=	serverCore.cpp
+SRC			+=	Request.cpp
+SRC			+=	ResponseBuilder.cpp
+SRC			+=	utils.cpp
 
 OBJ			:=	$(SRC:.cpp=.o)
 

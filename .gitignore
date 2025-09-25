@@ -45,3 +45,7 @@ webserv
 
 # debug information files
 *.dwo
+
+*.txt
+
+test

@@ -1,0 +1,43 @@
+{
+  "personal": {
+    "name": "Julien",
+    "title": "Développeur Web",
+    "description": "Passionné de développement web et de nouvelles technologies"
+  },
+  "skills": [
+    {
+      "name": "JavaScript",
+      "level": 85,
+      "category": "Frontend"
+    },
+    {
+      "name": "C++98",
+      "level": 90,
+      "category": "Backend"
+    },
+    {
+      "name": "HTML/CSS",
+      "level": 95,
+      "category": "Frontend"
+    },
+    {
+      "name": "Python",
+      "level": 80,
+      "category": "Backend"
+    }
+  ],
+  "projects": [
+    {
+      "name": "WebServ",
+      "description": "Serveur HTTP en C++",
+      "technologies": ["C++", "HTTP", "Socket"],
+      "status": "En cours"
+    },
+    {
+      "name": "Portfolio Web",
+      "description": "Site portfolio personnel avec JavaScript",
+      "technologies": ["HTML", "CSS", "JavaScript"],
+      "status": "Terminé"
+    }
+  ]
+}

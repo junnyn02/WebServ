@@ -1,0 +1,325 @@
+/* 🌙 Thème clair par défaut (root) */
+:root {
+  --bg-color: rgb(243, 243, 243);
+  --box-color: #e6e6e6;
+  --arrow-color:rgb(185, 185, 185);
+  --text-color: rgb(32, 32, 32);
+  --secondary-text: rgb(85, 85, 85);
+  --block-bg: rgb(224, 224, 224);
+  --link-color: rgba(43, 43, 43, 0.63);
+  --external-link-color: rgb(32, 32, 32);
+}
+
+/* 🌑 Thème sombre appliqué via body.dark-mode */
+body.dark-mode {
+  --bg-color: #252525;
+  --box-color: #3a3a3a;
+  --arrow-color:rgb(161, 161, 161);
+  --text-color: #f0f0f0;
+  --secondary-text: #cccccc;
+  --block-bg: #313131;
+  --link-color: #dddddd;
+  --external-link-color: #6a798b;
+}
+
+/* 🌐 Style global */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Roboto', sans-serif;
+}
+
+/* 🔘 Bouton dark mode */
+button {
+  margin-top: 20px;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+/* 🧱 Bloc principal */
+.block {
+  margin: 80px;
+  padding: 40px;
+  background-color: var(--block-bg);
+}
+.gallery-wrapper {
+  display: flex;
+  align-items: center;
+  margin: 32px 30px;
+  position: relative;
+}
+
+#gallery-container {
+  display: flex;
+  overflow-x: hidden;
+  width: calc(150px * 4 + 16px * 3); /* 4 carrés + 3 gaps */
+  gap: 16px;
+  scroll-behavior: smooth;
+}
+
+.image-box {
+  width: 150px;
+  height: 150px;
+  border: 2px solid #ccc;
+  background-color: #f9f9f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  border-radius: 8px;
+  flex-shrink: 0; /* IMPORTANT pour empêcher les boxes de rétrécir */
+}
+
+.image-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.add-box {
+  background-color: #e0e0e0;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-box button {
+  font-size: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #555;
+  padding: 0;
+  margin: 0;
+}
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--arrow-color);
+  border: none;
+  cursor: pointer;
+  font-size: 8px;
+  padding: 5px 10px;
+  margin: 0 10px;
+  border-radius: 5px;
+  user-select: none;
+}
+
+.arrow.left {
+  left: -40px; /* place la flèche dans la marge à gauche */
+}
+
+.arrow.right {
+  right: -40px; /* place la flèche dans la marge à droite */
+}
+
+.arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+body.dark-mode .image-box {
+  border-color: #444;
+  background-color: #1e1e1e;
+}
+
+body.dark-mode .add-box {
+  background-color: #333;
+}
+
+body.dark-mode .add-box:hover {
+  background-color: #444;
+}
+
+body.dark-mode .add-box button {
+  color: #aaa;
+}
+
+.project-item {
+  background-color: var(--box-color);
+  color: var(--text-color);
+  padding: 20px;
+  margin-left: 30px;
+  margin-right: 30px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.project-item h3 {
+  margin-bottom: 10px;
+  color: var(--text-color);
+}
+
+.project-item p {
+  color: var(--secondary-text);
+  margin-bottom: 8px;
+}
+
+.skill-item {
+  background-color: var(--box-color);
+  color: var(--text-color);
+  margin-left: 30px;
+  margin-right: 30px;
+  margin-bottom: 20px;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.skill-item h3 {
+  margin: 0 0 5px 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.skill-item p {
+  margin: 0;
+  color: var(--secondary-text);
+  font-size: 14px;
+}
+
+.skill-bar-background {
+  background-color: #f0f0f0;
+  height: 10px;
+  border-radius: 5px;
+  margin-top: 5px;
+  overflow: hidden;
+}
+
+.skill-bar-fill {
+  background-color: #47596d;
+  height: 100%;
+  width: 0%;
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+
+/* 🔗 Lien contact perso */
+.lien-perso {
+  color: var(--link-color);
+  font-weight: 300;
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+  text-decoration: none;
+}
+
+.lien-perso:hover {
+  text-decoration: underline;
+}
+
+/* 🔗 Lien externe */
+.lien-ext {
+  color: var(--external-link-color);
+  font-weight: 300;
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+  text-decoration: none;
+  padding-bottom: 30px;
+}
+
+.lien-ext:hover {
+  text-decoration: underline;
+}
+
+/* 🧾 Titres */
+h1 {
+  color: var(--text-color);
+  font-weight: 700;
+  padding: 10px;
+  text-align: center;
+}
+
+h2 {
+  color: var(--text-color);
+  font-weight: 300;
+  margin-left: 30px;
+}
+
+/* 📄 Paragraphe */
+p {
+  color: var(--secondary-text);
+  font-weight: 300;
+  margin-left: 30px;
+  margin-right: 30px;
+  text-align: justify;
+}
+
+/* 🖼️ Image */
+img {
+  display: block;
+  margin: 20px auto;
+  width: 50%;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+/* Style du switch (curseur) */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Curseur visuel */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: #f3f3f3;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+/* Position activée (curseur à droite + fond changé) */
+input:checked + .slider {
+  background-color: #5a6f81;
+}
+
+input:checked + .slider::before {
+  transform: translateX(22px);
+}
+
+/* Libellé à droite */
+.toggle-label {
+  color: var(--text-color);
+  font-size: 16px;
+  font-weight: 400;
+}

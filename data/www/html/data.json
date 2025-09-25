@@ -1,0 +1,53 @@
+{
+  "personal": {
+    "name": "Jay Gatsby",
+    "title": "Développeur Full Stack",
+    "email": "gatsby@example.com",
+    "location": "West Egg, New York",
+    "bio": "Passionné par le développement web et les nouvelles technologies. Toujours à la recherche de nouveaux défis."
+  },
+  "skills": [
+    {
+      "category": "Frontend",
+      "technologies": ["HTML5", "CSS3", "JavaScript"]
+    },
+    {
+      "category": "Backend", 
+      "technologies": ["C++", "Python", "C"]
+    },
+    {
+      "category": "Database",
+      "technologies": ["MySQL"]
+    },
+    {
+      "category": "Tools",
+      "technologies": ["Git", "Docker", "Linux", "VS Code"]
+    }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "title": "WebServ",
+      "description": "Serveur HTTP implémenté en C++98 inspiré de nginx",
+      "technologies": ["C++98", "HTTP", "Socket Programming"],
+      "status": "En cours",
+      "github": "https://github.com/gatsby/webserv"
+    },
+    {
+      "id": 2,
+      "title": "Portfolio Website",
+      "description": "Site web responsive avec mode sombre",
+      "technologies": ["HTML5", "CSS3", "JavaScript"],
+      "status": "Terminé",
+      "demo": "https://gatsby-portfolio.com"
+    }
+  ],
+  "experience": [
+    {
+      "company": "École 42",
+      "position": "Étudiant Développeur",
+      "period": "2023 - 2025",
+      "description": "Formation intensive en programmation système et web"
+    }
+  ]
+}
