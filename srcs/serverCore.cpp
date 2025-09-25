@@ -48,7 +48,6 @@ clientData	serverCore::receiveRequest()
 		std::exit(EXIT_FAILURE);
 	}
 
-	// use recv !!!!
 	size_t valread = recv(data.clientSocket, data.buffer, BUFFER_SIZE, 0); // do we need flags ??? MSG_DONTWAIT ?
 	std::cout << data.buffer << std::endl;
 	if(valread < 0)
