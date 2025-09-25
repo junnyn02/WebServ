@@ -23,6 +23,13 @@ void	serverCore::startServer()
 	sockAddr.sin_port = htons(port);
 	sockAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
+	int opt = 1;
+	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+	{
+		std::cout << "Failed to set socket options." << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
+
 	if (bind(serverSocket, (struct sockaddr*)&sockAddr, sizeof(sockaddr_in)) < 0)
 	{
 		std::cout << "Failed to bind to port " << port << "." << std::endl;
