@@ -84,42 +84,17 @@ void Request::printRequest()
  - check for forbidden characters in uri + percent encoding
  - check for unsupported media type
 */
-int Request::parseRequestLine(const std::string& line)
+
+std::string removeSpace(const std::string& line)
 {
-	size_t sp = line.find(" ", 0);
-	std::string method = line.substr(0, sp);
-	if (method != "GET" && method != "POST" && method != "DELETE")
-	{
-		_status = 501;
-		std::cerr << _status << " Not implemented\n";
-		std::cout << BOLDRED << method << std::endl << RESET;
-		return 0;
-	}
-	_method = method;
-	sp++;
-	size_t uri_end = line.find(" ", sp);
-	_uri = line.substr(sp, (uri_end - sp));
-	if (_uri.length() > 8000)
-	{
-		_status = 414;
-		std::cerr << _status << " URI Too Long\n";
-		return 0;
-	}
-	if (_uri.find("http://localhost8080") == 0)
-		_uri.erase(0, 21);
-	uri_end++;
-	size_t crlf = line.find("\r\n", uri_end);
-	if (line.substr(uri_end, (crlf - uri_end)) != "HTTP/1.1")
-	{
-		_status = 505;
-		std::cout << line.substr(uri_end, crlf) << std::endl;
-		std::cerr << _status << " HTTP Version Not Supported\n";
-		return 0;
-	}
-	return 1;
+	int i = 0;
+	while (line[i] == ' ')
+		i++;
+	std::string new_line = line.substr(i, line.length() - i);
+	return new_line;
 }
 
-int Request::parseHeaders(std::string& headers) //need to handle whitespace after ':'
+int Request::parseHeaders(std::string& headers)
 {
 	size_t line = headers.find("\r\n");
 	while (line != std::string::npos)
@@ -127,7 +102,8 @@ int Request::parseHeaders(std::string& headers) //need to handle whitespace afte
 		std::string pair = headers.substr(0, line);
 		size_t colon = pair.find(":");
 		std::string key = pair.substr(0, colon);
-		std::string value = pair.substr(colon + 1, pair.length() - 2);
+		std::string raw_value = pair.substr(colon + 1, pair.length() - 2);
+		std::string value = removeSpace(raw_value);
 		_headers.insert(std::pair<std::string, std::string>(key, value));
 		headers.erase(0, line + 2);
 		line = headers.find("\r\n");
@@ -160,6 +136,41 @@ int Request::parseHeaders(std::string& headers) //need to handle whitespace afte
 	return 1;
 }
 
+int Request::parseRequestLine(const std::string& line)
+{
+	size_t sp = line.find(" ", 0);
+	std::string method = line.substr(0, sp);
+	if (method != "GET" && method != "POST" && method != "DELETE")
+	{
+		_status = 501;
+		std::cerr << _status << " Not implemented\n";
+		std::cout << BOLDRED << method << std::endl << RESET;
+		return 0;
+	}
+	_method = method;
+	sp++;
+	size_t uri_end = line.find(" ", sp);
+	_uri = line.substr(sp, (uri_end - sp));
+	if (_uri.length() > 8000)
+	{
+		_status = 414;
+		std::cerr << _status << " URI Too Long\n";
+		return 0;
+	}
+	if (_uri.find("http://localhost8080") == 0)// change?
+		_uri.erase(0, 21);
+	uri_end++;
+	size_t crlf = line.find("\r\n", uri_end);
+	if (line.substr(uri_end, (crlf - uri_end)) != "HTTP/1.1")
+	{
+		_status = 505;
+		std::cout << line.substr(uri_end, crlf) << std::endl;
+		std::cerr << _status << " HTTP Version Not Supported\n";
+		return 0;
+	}
+	return 1;
+}
+
 void Request::parseBody(const std::string&) {}
 
 void Request::fillRequest(const clientData& data)
@@ -172,7 +183,7 @@ void Request::fillRequest(const clientData& data)
 	{
 		request.erase(0, 2);
 		it = request.find("\r\n");
-	}
+	}// might mess with request splitting
 	std::string request_line = request.substr(0, it);
 	if (!parseRequestLine(request_line))
 		return;
