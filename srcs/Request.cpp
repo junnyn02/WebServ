@@ -183,3 +183,8 @@ void Request::fillRequest(const clientData& data)
 	_body = request.substr(empty + 2, data.size - empty);
 	//check if body is too long, error 413 -> defined in config file
 }
+
+void	Request::setURI(const std::string &new_str)
+{
+	this->_uri = new_str;
+}
