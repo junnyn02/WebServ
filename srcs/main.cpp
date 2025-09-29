@@ -74,7 +74,7 @@ int	main(int, char**)
 		Request fresh(data);
 		ResponseBuilder	response(fresh);
 		fresh.printRequest(); // remove later
-		std::string hello = response.exec();
+		std::string hello = response.sendResponse();
 		for (size_t i = 0; i < hello.length(); i++)
 			data.buffer[i] = hello.c_str()[i];
 		for (size_t i = hello.length(); i < BUFFER_SIZE; i++)
