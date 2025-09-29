@@ -118,9 +118,10 @@ void    ResponseBuilder::tryGet(void)
     // std::cout << "code: " << this->_code << std::endl;
 }
 
-bool    ResponseBuilder::checkMime(void) const
+bool    ResponseBuilder::checkMime(void)
 {
-    if (_type == "image/png" || _type == "image/jpeg" || _type == "image/jpg" || _type == "image/gif")
+    // std::cout << _request.getType() << std::endl;
+    if (_request.getType() == "image/png" || _request.getType() == "image/jpeg" || _request.getType() == "image/jpg" || _request.getType() == "image/gif")
         return true;
     return false;
 }
