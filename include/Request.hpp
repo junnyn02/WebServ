@@ -43,4 +43,6 @@ class Request
 		void	setURI(const std::string &);
 };
 
+std::string normalizeUri(const std::string&);
+
 #endif

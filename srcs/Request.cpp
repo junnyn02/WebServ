@@ -136,6 +136,22 @@ int Request::parseHeaders(std::string& headers)
 	return 1;
 }
 
+std::string normalizeUri(const std::string& raw) //need to test
+{
+	std::string clean;
+	if (raw.find("http://localhost8080") == 0)
+		clean = raw.substr(21, raw.length() - 21);
+	else
+		clean = raw;
+	if (clean.find("?") != std::string::npos)
+	{
+		size_t query = clean.find("?");
+		clean.erase(query);
+	}
+	return clean;
+
+}
+
 int Request::parseRequestLine(const std::string& line)
 {
 	size_t sp = line.find(" ", 0);
@@ -150,15 +166,14 @@ int Request::parseRequestLine(const std::string& line)
 	_method = method;
 	sp++;
 	size_t uri_end = line.find(" ", sp);
-	_uri = line.substr(sp, (uri_end - sp));
-	if (_uri.length() > 8000)
+	std::string raw_uri = line.substr(sp, (uri_end - sp));
+	if (raw_uri.length() > 8000)
 	{
 		_status = 414;
 		std::cerr << _status << " URI Too Long\n";
 		return 0;
 	}
-	if (_uri.find("http://localhost8080") == 0)// change?
-		_uri.erase(0, 21);
+	_uri = normalizeUri(raw_uri);
 	uri_end++;
 	size_t crlf = line.find("\r\n", uri_end);
 	if (line.substr(uri_end, (crlf - uri_end)) != "HTTP/1.1")
