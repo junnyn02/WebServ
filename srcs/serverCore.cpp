@@ -9,39 +9,88 @@ serverCore::~serverCore()
 	close(serverSocket);
 }
 
-void	serverCore::startServer() 
+void	serverCore::serverError(std::string str)
+{
+	std::cout << str << std::endl;
+	std::exit(EXIT_FAILURE);
+}
+
+void	serverCore::setBaseSocket()
 {
 	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-	if (serverSocket < 0) 
-	{
-		std::cout << "Failed to create socket." << std::endl;
-		std::exit(EXIT_FAILURE);
-	}
+	if (serverSocket < 0)
+		serverError("Failed to create socket.");
 
-// should we have several sockets ?
 	sockAddr.sin_family = AF_INET;
 	sockAddr.sin_port = htons(port);
 	sockAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	int opt = 1;
 	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-	{
-		std::cout << "Failed to set socket options." << std::endl;
-		std::exit(EXIT_FAILURE);
-	}
+		serverError("Failed to set socket options.");
 
 	if (bind(serverSocket, (struct sockaddr*)&sockAddr, sizeof(sockaddr_in)) < 0)
 	{
-		std::cout << "Failed to bind to port " << port << "." << std::endl;
+		std::ostringstream s;
+		s << "Failed to bind to port " << port << "." << std::endl;
+		serverError(s.str());
+	}
+}
+
+void	serverCore::setNonBlocking()
+{
+	/* ----- Set non blocking ----- */
+	int flags = fcntl(serverSocket, F_GETFL, 0);
+	if (flags < 0) {
+		std::cout << "fcntl(F_GETFL)" << std::endl;
 		std::exit(EXIT_FAILURE);
 	}
+	if (fcntl(serverSocket, F_SETFL, flags | O_NONBLOCK) < 0) {
+		std::cout << "fcntl(F_SETFL)" << std::endl;
+		std::exit(EXIT_FAILURE);
+    }
+	/* ---------------------------- */
+}
 
+void	serverCore::setEpoll()
+{
+	/* -------- Set epoll  -------- */
+	// epoll_fd = epoll_create1(0);
+	// if (epoll_fd == -1)
+	// {
+	// 	std::cout << "Failed to listen on socket." << std::endl;
+	// 	std::exit(EXIT_FAILURE);
+	// }
+
+	// event.events = EPOLLIN; // read events
+	// event.data.fd = serverSocket;
+
+	// if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, serverSocket, &event) == -1) 
+	// {
+	// 	std::cout << "Failed to listen on socket." << std::endl;
+	// 	std::exit(EXIT_FAILURE);
+	// }
+	/* ---------------------------- */
+}
+
+void	serverCore::startServer() 
+{
+	// 1. Create socket
+	// 2. Set socket options (e.g., SO_REUSEADDR)
+	// 3. Bind to an address and port
+	setBaseSocket();
+
+	// Set the socket to be non-blocking
+	setNonBlocking();
+
+	// Listen for connections
 	if (listen(serverSocket, 10) < 0) //change value to however much we need
 	{
 		std::cout << "Failed to listen on socket." << std::endl;
 		std::exit(EXIT_FAILURE);
 	}
-	// where the fuck should i use select ??? and epoll ??????
+
+	// setEpoll();
 }
 
 clientData	serverCore::receiveRequest()

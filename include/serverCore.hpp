@@ -3,13 +3,17 @@
 #include <cstring>
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/epoll.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 #define EXIT_FAILURE 1
 #define BUFFER_SIZE 100000
 #define PORT 8080
+#define MAX_EVENTS 10
 
 typedef struct clientData
 {
@@ -24,6 +28,10 @@ private:
 
 	int	serverSocket;
 	sockaddr_in sockAddr;
+
+	void	setBaseSocket();
+	void	setNonBlocking();
+	void	setEpoll();
 
 public:
 
@@ -44,6 +52,8 @@ public:
 	serverCore();
 	~serverCore();
 	
+	void		serverError(std::string);
+
 	void		startServer();
 
 	clientData	receiveRequest();
