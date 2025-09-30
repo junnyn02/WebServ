@@ -120,7 +120,7 @@ void    ResponseBuilder::tryGet(void)
 
 bool    ResponseBuilder::checkMime(void)
 {
-    // std::cout << _request.getType() << std::endl;
+    std::cout << "[CHECK_MIME] type is : " << _request.getType() << std::endl;
     if (_request.getType() == "image/png" || _request.getType() == "image/jpeg" || _request.getType() == "image/jpg" || _request.getType() == "image/gif")
         return true;
     return false;
@@ -128,6 +128,7 @@ bool    ResponseBuilder::checkMime(void)
 
 void    ResponseBuilder::tryPost(void)
 {
+    // std::cout << _request.get
     if (!checkMime())
     {
         _code = "415 Unsupported Media Type";
@@ -164,7 +165,7 @@ const std::string   ResponseBuilder::getType(void) const
     std::string end;
     std::size_t found = _request.getURI().find('.');
     if (found != std::string::npos)
-        end = _request.getURI().substr(found, _request.getURI().length());
+        end = _request.getURI().substr(found, _requGatsby.jpgest.getURI().length());
     std::map<std::string, std::string>::const_iterator it = _mime.begin();
     for (; it != _mime.end(); ++it)
     {

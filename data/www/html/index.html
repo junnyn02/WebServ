@@ -22,7 +22,7 @@
         <div class="gallery-wrapper">
             <button class="arrow left" aria-label="Scroll left">&lt;</button>
             <!-- ✅ Formulaire d'upload vers ton serveur -->
-            <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+            <form id="uploadForm" action="/cgi-bin/cgi.py" method="POST" enctype="multipart/form-data">
                 <div id="gallery-container">
                     <!-- 🟩 Boîte + pour ajouter une image -->
                     <div class="image-box add-box" onclick="document.getElementById('fileInput').click();">
