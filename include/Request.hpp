@@ -30,7 +30,7 @@ class Request
 		void fillRequest(const struct clientData&);
 		int parseRequestLine(const std::string&);
 		int parseHeaders(std::string&);
-		void parseBody(const std::string&);
+		std::string parseBody(const std::string&);
 		void printRequest();
 
 		const std::string& getMethod() const;
