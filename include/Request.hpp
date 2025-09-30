@@ -19,6 +19,7 @@ class Request
 		std::string							_uri;
 		std::string							_type; 		//content type
 		size_t								_size;		//content size
+		std::string							_name;		//filename
 		std::string							_body;		//use string or char* ?
 		size_t								_length;	//request string size
 		int									_status;
@@ -35,6 +36,7 @@ class Request
 		const std::string& getMethod() const;
 		const std::string& getURI() const;
 		const std::string& getType() const;
+		const std::string& getName() const;
 		const std::string& getBody() const;
 		int getLength() const;
 		int getSize() const;

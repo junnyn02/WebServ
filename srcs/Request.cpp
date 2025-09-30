@@ -15,9 +15,10 @@ Request::Request(const clientData& data)
 	_method = "";
 	_uri = "";
 	_type = "";
+	_size = 0;
+	_name = "";
 	_body = "";
 	_length = data.size;
-	_size = 0;
 	_status = 0;
 	this->fillRequest(data);
 }
@@ -35,6 +36,11 @@ const std::string& Request::getURI() const
 const std::string& Request::getType() const
 {
 	return (_type);
+}
+
+const std::string& Request::getName() const
+{
+	return (_name);
 }
 
 const std::string& Request::getBody() const
@@ -76,7 +82,7 @@ void Request::printRequest()
 		it++;
 	}
 	std::cout << std::endl;
-	std::cout << BOLDRED << "Body:\n" << RESET << getBody() << std::endl;
+	//std::cout << BOLDRED << "Body:\n" << RESET << getBody() << std::endl;
 }
 
 /* To-do :
@@ -101,6 +107,12 @@ int Request::parseHeaders(std::string& headers)
 	{
 		std::string pair = headers.substr(0, line);
 		size_t colon = pair.find(":");
+		if (colon == std::string::npos)
+		{
+			_status = 400;
+			std::cerr << _status << " Malformed header (no ':')\n";
+			return 0;
+		}
 		std::string key = pair.substr(0, colon);
 		std::string raw_value = pair.substr(colon + 1, pair.length() - 2);
 		std::string value = removeSpace(raw_value);
@@ -155,17 +167,28 @@ std::string normalizeUri(const std::string& raw) //need to test
 int Request::parseRequestLine(const std::string& line)
 {
 	size_t sp = line.find(" ", 0);
+	if (sp == std::string::npos)
+	{
+		_status = 400;
+		std::cerr << _status << " Bad request sp\n";
+		return 0;
+	}
 	std::string method = line.substr(0, sp);
 	if (method != "GET" && method != "POST" && method != "DELETE")
 	{
 		_status = 501;
 		std::cerr << _status << " Not implemented\n";
-		std::cout << BOLDRED << method << std::endl << RESET;
 		return 0;
 	}
 	_method = method;
 	sp++;
 	size_t uri_end = line.find(" ", sp);
+	if (uri_end == std::string::npos || uri_end <= sp)
+	{
+		_status = 400;
+		std::cerr << _status << " Bad request uri_end\n";
+		return 0;
+	}
 	std::string raw_uri = line.substr(sp, (uri_end - sp));
 	if (raw_uri.length() > 8000)
 	{
@@ -175,7 +198,7 @@ int Request::parseRequestLine(const std::string& line)
 	}
 	_uri = normalizeUri(raw_uri);
 	uri_end++;
-	size_t crlf = line.find("\r\n", uri_end);
+	size_t crlf = line.length();
 	if (line.substr(uri_end, (crlf - uri_end)) != "HTTP/1.1")
 	{
 		_status = 505;
@@ -192,7 +215,7 @@ void Request::fillRequest(const clientData& data)
 {
 	if (data.size == 0)													//might mess with chunking
 		return;
-	std::string request = data.buffer;
+	std::string request(data.buffer, data.size);
 	size_t it = request.find("\r\n");
 	while (it == 0)														//ignore empty lines before request line
 	{
@@ -206,6 +229,12 @@ void Request::fillRequest(const clientData& data)
 	std::string headers = request.substr(it + 2, empty - (it + 2));
 	if (!parseHeaders(headers))
 		return;
+	if (empty + 2 > data.size)
+	{
+		_status = 400;
+		std::cerr << _status << " Bad request: claimed length inconsistent with received bytes\n";
+		return;
+	}
 	_body = request.substr(empty + 2, data.size - empty);
 	//check if body is too long, error 413 -> defined in config file
 }

@@ -3,6 +3,7 @@ NAME		:=	webserv
 CXX			:=	c++
 
 CXXFLAGS	:=	-Wall -Wextra -Werror -g3 -std=c++98
+SANFLAGS	:=	-fsanitize=address,undefined
 
 OBJ_PATH	:=	objects/
 INC_PATH	:=	include/
@@ -30,6 +31,9 @@ $(OBJ_PATH)%.o: $(SRC_PATH)%.cpp
 
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $(NAME) $(OBJS)
+
+asan:	CXXFLAGS += $(SANFLAGS)
+asan:	fclean $(NAME)
 
 clean:
 	rm -rf $(OBJ_PATH)
