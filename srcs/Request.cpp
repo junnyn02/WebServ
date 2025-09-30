@@ -70,25 +70,25 @@ void Request::printRequest()
 	std::cout << BOLDRED<<  "Request\n" << RESET;
 	std::cout << "method : " << this->getMethod() << std::endl;
 	std::cout << "uri : " << this->getURI() << std::endl;
+	std::cout << "content type : " << this->getType() << std::endl;
+	std::cout << "content size : " << this->getSize() << std::endl;
+	std::cout << "file name : " << this->getName() << std::endl;
 	std::cout << "message length : " << this->getLength() << std::endl;
-	std::cout << "size : " << this->getSize() << std::endl;
-	std::cout << "type : " << this->getType() << std::endl;
 	std::cout << "status : " << this->getStatus() << std::endl;
-	std::cout << GREEN << "headers :\n" << RESET;
-	std::map<std::string, std::string>::iterator it = _headers.begin();
-	while (it != _headers.end())
-	{
-		std::cout << it->first << " : " << it->second << std::endl;
-		it++;
-	}
-	std::cout << std::endl;
-	//std::cout << BOLDRED << "Body:\n" << RESET << getBody() << std::endl;
+	// std::cout << GREEN << "headers :\n" << RESET;
+	// std::map<std::string, std::string>::iterator it = _headers.begin();
+	// while (it != _headers.end())
+	// {
+	// 	std::cout << it->first << " : " << it->second << std::endl;
+	// 	it++;
+	// }
+	// std::cout << std::endl;
+	std::cout << BOLDRED << "Body:\n" << RESET << getBody() << std::endl;
 }
 
 /* To-do :
  - handle chunking
- - check for forbidden characters in uri + percent encoding
- - check for unsupported media type
+ - check for forbidden characters in uri + percent encoding?
 */
 
 std::string removeSpace(const std::string& line)
@@ -209,7 +209,68 @@ int Request::parseRequestLine(const std::string& line)
 	return 1;
 }
 
-void Request::parseBody(const std::string&) {}
+std::string Request::parseBody(const std::string& raw)// check for empty body first?
+{
+	if (_type.find("multipart/form-data") == std::string::npos)
+	{
+		_status = 415;
+		std::cerr << _status << " Unsupported Media Type\n";
+		return "";
+	}
+	size_t pos = _type.find("boundary=");
+	if (pos == std::string::npos)
+	{
+		_status = 400;
+		std::cerr << _status << " Bad request: missing media header\n";
+		return "";
+	}
+	pos += 9;
+	std::string boundary = _type.substr(pos, _type.length() - pos);
+	pos = raw.find(boundary);
+	if (pos == std::string::npos)
+	{
+		_status = 400;
+		std::cerr << _status << " Bad request: missing media header\n";
+		return "";
+	}
+	pos += boundary.length();
+	size_t end = raw.find("\r\n\r\n", pos);
+	if (end == std::string::npos)
+	{
+		_status = 400;
+		std::cerr << _status << " Bad request: missing CRLF\n";
+		return "";
+	}
+	std::string header = raw.substr(pos, end - pos);
+	pos = header.find("filename");
+	if (pos == std::string::npos)
+	{
+		_status = 400;
+		std::cerr << _status << " Bad request: missing file name\n";	//should we accept this?
+		return "";
+	}
+	pos += 10;
+	end = header.find("\r\n", pos);
+	if (end == std::string::npos)
+	{
+		_status = 400;
+		std::cerr << _status << " Bad request: missing CRLF\n";
+		return "";
+	}
+	end -= 1;
+	_name = header.substr(pos, end - pos);
+	pos = header.find("Content-Type: image/");					//might be case insensitive
+	if (pos == std::string::npos)
+	{
+		_status = 415;
+		std::cerr << _status << " Unsupported Media Type\n";		//or bad request?
+		return "";
+	}
+	pos += 14;
+	_type = header.substr(pos, header.length() - pos);
+	std::string body = raw.substr(header.length() + 4, _size);
+	return body;
+}
 
 void Request::fillRequest(const clientData& data)
 {
@@ -235,7 +296,11 @@ void Request::fillRequest(const clientData& data)
 		std::cerr << _status << " Bad request: claimed length inconsistent with received bytes\n";
 		return;
 	}
-	_body = request.substr(empty + 2, data.size - empty);
+	if (_method == "POST")
+	{
+		std::string raw_body = request.substr(empty + 2, data.size - empty);
+		_body = parseBody(raw_body);
+	}
 	//check if body is too long, error 413 -> defined in config file
 }
 
