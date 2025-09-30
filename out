@@ -1,0 +1,66 @@
+[1m[31mRequest
+[0mmethod : GET
+uri : /
+content type : 
+content size : 0
+file name : 
+message length : 446
+status : 0
+[1m[31mBody:
+[0m
+code: 200 OK
+[1m[31mRequest
+[0mmethod : GET
+uri : /styles.css
+content type : 
+content size : 0
+file name : 
+message length : 394
+status : 0
+[1m[31mBody:
+[0m
+code: 200 OK
+[1m[31mRequest
+[0mmethod : GET
+uri : /data.js
+content type : 
+content size : 0
+file name : 
+message length : 362
+status : 0
+[1m[31mBody:
+[0m
+code: 200 OK
+[1m[31mRequest
+[0mmethod : GET
+uri : /darkmode.js
+content type : 
+content size : 0
+file name : 
+message length : 366
+status : 0
+[1m[31mBody:
+[0m
+code: 200 OK
+[1m[31mRequest
+[0mmethod : GET
+uri : /Gatsby.jpg
+content type : 
+content size : 0
+file name : 
+message length : 448
+status : 0
+[1m[31mBody:
+[0m
+code: 200 OK
+[1m[31mRequest
+[0mmethod : GET
+uri : /portfolio.json
+content type : 
+content size : 0
+file name : 
+message length : 380
+status : 0
+[1m[31mBody:
+[0m
+code: 200 OK

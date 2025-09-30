@@ -268,7 +268,8 @@ std::string Request::parseBody(const std::string& raw)// check for empty body fi
 	}
 	pos += 14;
 	_type = header.substr(pos, header.length() - pos);
-	std::string body = raw.substr(header.length() + 4, _size);
+	end = raw.find("\r\n\r\n");
+	std::string body = raw.substr(end + 4, _size);
 	return body;
 }
 
