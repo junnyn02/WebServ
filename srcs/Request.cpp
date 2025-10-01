@@ -222,7 +222,17 @@ std::string normalizeUri(const std::string& raw)// rework to parse query strings
 		clean.erase(query);
 	}
 	return clean;
+}
 
+int	checkChar(const std::string& uri)
+{
+	for (size_t i = 0; i < uri.length(); i++)
+	{
+		if ((uri[i] >= '#' && uri[i] <= ';') || (uri[i] >= '?' && uri[i] <= '[') || (uri[i] >= 'a' && uri[i] <= 'z') ||
+       uri[i] == '!' || uri[i] == '=' || uri[i] == ']' || uri[i] == '_' || uri[i] == '~')
+		return 1;
+	}
+	return 0;
 }
 
 int Request::parseRequestLine(const std::string& line)
@@ -255,6 +265,12 @@ int Request::parseRequestLine(const std::string& line)
 	{
 		_status = 414;
 		std::cerr << _status << " URI Too Long\n";
+		return 0;
+	}
+	if (!checkChar(raw_uri))
+	{
+		_status = 400;
+		std::cerr << " Bad request: forbidden character in URI\n";
 		return 0;
 	}
 	_uri = normalizeUri(raw_uri);

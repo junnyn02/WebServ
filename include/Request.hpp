@@ -13,6 +13,7 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <cctype>
 
 class Request
 {
@@ -47,6 +48,7 @@ class Request
 		void	setURI(const std::string &);
 };
 
+int	checkChar(const std::string& uri);
 std::string normalizeUri(const std::string&);
 
 #endif
