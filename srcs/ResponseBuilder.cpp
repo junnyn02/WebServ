@@ -30,9 +30,12 @@ const std::string    ResponseBuilder::sendResponse(void)
     std::string response;
     if (_request.getMethod() == "GET")
     {
-        tryGet();
+        if (_request.getURI() == "/list-uploads")
+            buildListUploads();
+        else
+        {    tryGet();
         _type = getType();
-        _body = getBody();
+        _body = getBody();}
     }
     else if (_request.getMethod() == "POST")
     {
@@ -45,8 +48,44 @@ const std::string    ResponseBuilder::sendResponse(void)
     if (_code == "201 Created")
         response.append("Location: /uploads/" + _request.getURI() + "\r\n"); //URI = filename ?
     response.append("\r\n" + _body);
-    std::cout << "RESPONSE =" << std::endl << response << std::endl;
+    // std::cout << "RESPONSE =" << std::endl << response << std::endl;
     return response;
+}
+
+void ResponseBuilder::buildListUploads(void)
+{
+    std::string folder = "data/www/html/upload/";
+    DIR* dir = opendir(folder.c_str());
+    std::vector<std::string> images;
+
+    if (dir != NULL) {
+        struct dirent* ent;
+        while ((ent = readdir(dir)) != NULL) {
+            std::string name = ent->d_name;
+
+            // Ne pas inclure . et ..
+            if (name == "." || name == "..")
+                continue;
+
+            // Tu peux filtrer plus ici (par extension)
+            images.push_back("/upload/" + name);
+        }
+        closedir(dir);
+    }
+
+    // Formater en JSON
+    std::ostringstream oss;
+    oss << "[";
+    for (size_t i = 0; i < images.size(); ++i) {
+        oss << "\"" << images[i] << "\"";
+        if (i != images.size() - 1)
+            oss << ",";
+    }
+    oss << "]";
+    _body = oss.str();
+    _code = "200 OK";
+    _type = "application/json";
+    std::cout << "[LIST UPLOADS]" << _body << " | [CODE]: " << _code << " | [TYPE]: " << _type << std::endl;
 }
 
 bool isDirectoryAccessible(const std::string& path)
@@ -120,18 +159,42 @@ void    ResponseBuilder::tryGet(void)
 
 bool    ResponseBuilder::checkMime(void)
 {
-    std::cout << "[CHECK_MIME] type is : " << _request.getType() << std::endl;
+    // std::cout << "[CHECK_MIME] type is : " << _request.getType() << std::endl;
     if (_request.getType() == "image/png" || _request.getType() == "image/jpeg" || _request.getType() == "image/jpg" || _request.getType() == "image/gif")
         return true;
     return false;
 }
 
-bool    ResponseBuilder::createFile(void) const
+int checkIfFileExists(const std::string &filename)
+{
+  struct stat buffer;
+  return (stat(filename.c_str(), &buffer));
+}
+
+bool    ResponseBuilder::createFile(void)
 {
     try
     {
-        std::ofstream   outfile(_request.getName().c_str(), std::ios::binary);
-        
+        _filename = _request.getName();
+        std::string full_path = "data/www/html/upload/" + _filename;
+        if (checkIfFileExists(full_path) == 0)
+        {
+            int i = 1;
+            while (checkIfFileExists(full_path) == 0)
+            {
+                std::stringstream nb;
+                nb << i;
+                std::size_t found = _request.getName().find(".jpg");
+                if (found != std::string::npos)
+                    _filename.insert(found, nb.str());
+                full_path = "data/www/html/upload/" + _filename;
+                i++;
+            }
+        }
+        full_path = "data/www/html/upload/" + _filename;
+        std::ofstream   outfile(full_path.c_str(), std::ios::binary);
+        outfile.write(_request.getBody().c_str(), _request.getLength());
+        outfile.close();
     }
     catch(const std::exception& e)
     {
@@ -158,10 +221,10 @@ void    ResponseBuilder::tryPost(void)
     }
     else
     {
+        createFile();
         _code = "201 Created";
         _type = "application/json";
-        _body = "{\"status\":\"success\",\"message\":\"Image uploaded\",\"url\":\"/uploads/photo.jpg\"}"; //change w/ name of file
-        createFile();
+        _body = "{\"status\":\"success\",\"message\":\"Image uploaded\",\"url\":\"/upload/" + _filename + "\"}"; //change w/ name of file
     }
 }
 

@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+  loadUploadedImages();
   const galleryContainer = document.getElementById('gallery-container');
   const leftArrow = document.querySelector('.arrow.left');
   const rightArrow = document.querySelector('.arrow.right');
@@ -78,7 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // ✅ Lecture de la réponse du serveur
-        const imageUrl = await response.text(); // ou JSON si tu préfères
+        const jsonResponse = await response.json(); // parse la réponse JSON
+        const imageUrl = jsonResponse.url; // récupère la clé url
+        // const imageUrl = await response.text(); // ou JSON si tu préfères
         console.log('Image enregistrée:', imageUrl);
 
         // ⬇️ Crée et insère la nouvelle image dans la galerie
@@ -105,6 +108,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     });
 });
+
+async function loadUploadedImages() {
+    try {
+        const response = await fetch('/list-uploads'); // appelle ton serveur C++
+        if (!response.ok) throw new Error('Erreur chargement des images');
+
+        const images = await response.json(); // ex: ["/upload/img1.jpg", "/upload/img2.png"]
+
+        const galleryContainer = document.getElementById('gallery-container');
+        const addBox = galleryContainer.querySelector('.add-box');
+
+        images.forEach(imageUrl => {
+            const box = document.createElement('div');
+            box.className = 'image-box';
+
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = "Image";
+
+            box.appendChild(img);
+            galleryContainer.insertBefore(box, addBox); // insère avant le bouton "+"
+        });
+
+        updateGalleryVisibility();
+        updateArrows();
+    } catch (error) {
+        console.error("Erreur lors du chargement des images :", error);
+    }
+}
 
 async function loadPortfolioData() {
     try {

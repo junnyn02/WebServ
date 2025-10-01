@@ -53,9 +53,8 @@ clientData	serverCore::receiveRequest()
 		std::cout << "Failed to grab connection." << std::endl;
 		std::exit(EXIT_FAILURE);
 	}
-
 	size_t valread = recv(data.clientSocket, data.buffer, BUFFER_SIZE, 0); // do we need flags ??? MSG_DONTWAIT ?
-	std::cout << "data.buffer:\n" << data.buffer << std::endl << std::endl;
+	// std::cout << "data.buffer:\n" << data.buffer << std::endl << std::endl;
 	if(valread == 0)
 		std::cout << "No bytes are there to read" << std::endl;
 	data.size = valread;

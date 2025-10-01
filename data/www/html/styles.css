@@ -47,12 +47,12 @@ button {
   align-items: center;
   margin: 32px 30px;
   position: relative;
+  width: auto;
 }
 
 #gallery-container {
   display: flex;
   overflow-x: hidden;
-  width: calc(150px * 4 + 16px * 3); /* 4 carrés + 3 gaps */
   gap: 16px;
   scroll-behavior: smooth;
 }

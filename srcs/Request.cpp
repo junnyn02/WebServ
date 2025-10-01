@@ -301,9 +301,9 @@ void Request::fillRequest(const clientData& data)
 	{
 		std::string raw_body = request.substr(empty + 2, data.size - empty);
 		_body = parseBody(raw_body);
-		std::ofstream test(_name.c_str(), std::ios::binary);
-		test << _body;
-		test.close();
+		// std::ofstream test(_name.c_str(), std::ios::binary);
+		// test << _body;
+		// test.close();
 	}
 	//check if body is too long, error 413 -> defined in config file
 }
