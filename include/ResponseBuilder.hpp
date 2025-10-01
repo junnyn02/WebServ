@@ -23,6 +23,7 @@ class ResponseBuilder
         void                isFile(const std::string &);
         
         bool                checkMime(void);        
+        bool                createFile(void) const;
 
         const std::string   sendResponse(void);
         const std::string   getCode(void) const;

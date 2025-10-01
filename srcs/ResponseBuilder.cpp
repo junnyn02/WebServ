@@ -126,6 +126,21 @@ bool    ResponseBuilder::checkMime(void)
     return false;
 }
 
+bool    ResponseBuilder::createFile(void) const
+{
+    try
+    {
+        std::ofstream   outfile(_request.getName().c_str(), std::ios::binary);
+        
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        return false;
+    }
+    return true;
+}
+
 void    ResponseBuilder::tryPost(void)
 {
     // std::cout << _request.get
@@ -146,6 +161,7 @@ void    ResponseBuilder::tryPost(void)
         _code = "201 Created";
         _type = "application/json";
         _body = "{\"status\":\"success\",\"message\":\"Image uploaded\",\"url\":\"/uploads/photo.jpg\"}"; //change w/ name of file
+        createFile();
     }
 }
 
