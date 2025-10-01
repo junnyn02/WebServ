@@ -11,7 +11,7 @@ serverCore::~serverCore()
 
 void	serverCore::serverError(std::string str)
 {
-	std::cout << str << std::endl;
+	std::cerr << "Error: " << str << std::endl;
 	std::exit(EXIT_FAILURE);
 }
 
@@ -37,39 +37,29 @@ void	serverCore::setBaseSocket()
 	}
 }
 
-void	serverCore::setNonBlocking()
+void	serverCore::setNonBlocking(int fd)
 {
 	/* ----- Set non blocking ----- */
-	int flags = fcntl(serverSocket, F_GETFL, 0);
-	if (flags < 0) {
-		std::cout << "fcntl(F_GETFL)" << std::endl;
-		std::exit(EXIT_FAILURE);
-	}
-	if (fcntl(serverSocket, F_SETFL, flags | O_NONBLOCK) < 0) {
-		std::cout << "fcntl(F_SETFL)" << std::endl;
-		std::exit(EXIT_FAILURE);
-    }
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags < 0)
+		serverError("fcntl(F_GETFL)");
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) 
+		serverError("fcntl(F_SETFL)");
 	/* ---------------------------- */
 }
 
 void	serverCore::setEpoll()
 {
 	/* -------- Set epoll  -------- */
-	// epoll_fd = epoll_create1(0);
-	// if (epoll_fd == -1)
-	// {
-	// 	std::cout << "Failed to listen on socket." << std::endl;
-	// 	std::exit(EXIT_FAILURE);
-	// }
+	epoll_fd = epoll_create1(0);
+	if (epoll_fd == -1)
+		serverError("Failed to create epoll.");
 
-	// event.events = EPOLLIN; // read events
-	// event.data.fd = serverSocket;
+	event.events = EPOLLIN; // read events
+	event.data.fd = serverSocket;
 
-	// if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, serverSocket, &event) == -1) 
-	// {
-	// 	std::cout << "Failed to listen on socket." << std::endl;
-	// 	std::exit(EXIT_FAILURE);
-	// }
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, serverSocket, &event) == -1) 
+		serverError("epoll_ctl: serverSocket");
 	/* ---------------------------- */
 }
 
@@ -81,33 +71,73 @@ void	serverCore::startServer()
 	setBaseSocket();
 
 	// Set the socket to be non-blocking
-	setNonBlocking();
+	setNonBlocking(serverSocket);
 
 	// Listen for connections
-	if (listen(serverSocket, 10) < 0) //change value to however much we need
-	{
-		std::cout << "Failed to listen on socket." << std::endl;
-		std::exit(EXIT_FAILURE);
-	}
+	if (listen(serverSocket, SOMAXCONN) < 0) //change SOMAXCON value to however much we need
+		serverError("Error: Failed to listen on server socket.");
 
-	// setEpoll();
+	setEpoll();
 }
 
-clientData	serverCore::receiveRequest()
+void	serverCore::acceptNewClients()
+{
+	while (1)
+	{
+		struct sockaddr_in client_addr;
+		socklen_t client_len = sizeof(client_addr);
+		int client_fd = accept(serverSocket, (struct sockaddr *)&client_addr, &client_len);
+
+		if (client_fd == -1) 
+		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK) // All connections have been processed
+				return;
+			else 
+			{
+				std::cerr << "Error: accept on server socket" << std::endl;
+				return;
+			}
+		}
+
+		// Set the new client socket to non-blocking
+		setNonBlocking(client_fd);
+
+		// Add the new client socket to the epoll interest list
+		event.events = EPOLLIN | EPOLLET; // Monitor for read events, edge-triggered (ET) (instead of Level-Triggered (LT) -> single signal or repeating signals)
+		event.data.fd = client_fd;
+		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &event) == -1) 
+		{
+			std::cerr << "Error: epoll_ctl: client_fd" << std::endl;
+			close(client_fd);
+		}
+	}
+}
+
+clientData	serverCore::receiveRequest(int client_fd)
 {
 	clientData data;
-	unsigned long addrlen = sizeof(sockaddr_in);
-	data.clientSocket = accept(serverSocket, (struct sockaddr*)&sockAddr, (socklen_t*)&addrlen);
-	if (data.clientSocket < 0) {
-		std::cout << "Failed to grab connection." << std::endl;
-		std::exit(EXIT_FAILURE);
+	data.clientSocket = client_fd;
+	ssize_t valread;
+
+	// Read data from the client
+	while ((valread = recv(data.clientSocket, data.buffer, BUFFER_SIZE, 0)) > 0)
+	{
+		data.body.append(data.buffer, valread);
+		data.size += valread;
 	}
 
-	size_t valread = recv(data.clientSocket, data.buffer, BUFFER_SIZE, 0); // do we need flags ??? MSG_DONTWAIT ?
-	// std::cout << "data.buffer:\n" << data.buffer << std::endl << std::endl;
-	if(valread == 0)
-		std::cout << "No bytes are there to read" << std::endl;
-	data.size = valread;
+	if (valread == 0) // Client closed the connection
+	{
+		std::cout << "Client " << data.clientSocket << " disconnected" << std::endl;
+		close(data.clientSocket); // This automatically removes it from epoll
+
+		// put in EPOLLOUT mode to send Answer ig
+	}
+	else if (data.size == -1) // internal server error ig
+	{
+		std::cerr << "Error: recv" << std::endl;
+		close(data.clientSocket);
+	}
 	return (data);
 }
 
@@ -116,3 +146,5 @@ void	serverCore::sendResponse(clientData data)
 	send(data.clientSocket, data.buffer, data.size, 0); // do we need flags ???
 	close(data.clientSocket);
 }
+
+int	serverCore::getfd() { return (serverSocket); }

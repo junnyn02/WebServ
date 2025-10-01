@@ -1,16 +1,9 @@
 #pragma once
 
-#include <cstring>
-#include <cstdlib>
-#include <iostream>
-#include <sstream>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/epoll.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include "utils.hpp"
 
 #define EXIT_FAILURE 1
+#define INTERNAL_SERVER_ERROR 500
 #define BUFFER_SIZE 100000
 #define PORT 8080
 #define MAX_EVENTS 10
@@ -18,8 +11,9 @@
 typedef struct clientData
 {
 	char	buffer[BUFFER_SIZE];
-	size_t	size;
-	int		clientSocket;
+	std::string	body;
+	ssize_t		size;
+	int			clientSocket;
 } clientData;
 
 class serverCore
@@ -30,7 +24,6 @@ private:
 	sockaddr_in sockAddr;
 
 	void	setBaseSocket();
-	void	setNonBlocking();
 	void	setEpoll();
 
 public:
@@ -47,17 +40,21 @@ public:
 	std::string	cgi_root;
 	std::string	cgi_path;
 	std::string	cgi_ext;
+
+	int			epoll_fd;
+	struct epoll_event event;
 	//allowed methods   allow_methods POST GET; (could do an int value and check binary (like 1==GET, 10==POST, 100==other etc))
 
 	serverCore();
 	~serverCore();
 	
 	void		serverError(std::string);
-
 	void		startServer();
+	void		setNonBlocking(int fd);
+	void		acceptNewClients();
 
-	clientData	receiveRequest();
+	clientData	receiveRequest(int fd);
 	void		sendResponse(clientData);
 
-	int	connectAndReceive();
+	int			getfd();
 };
