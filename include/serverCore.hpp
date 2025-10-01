@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 #define EXIT_FAILURE 1
-#define BUFFER_SIZE 100000
+#define BUFFER_SIZE 1000000
 #define PORT 8080
 
 typedef struct clientData

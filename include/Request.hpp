@@ -11,6 +11,8 @@
 #include <string>
 #include <cstdlib>
 #include <sstream>
+#include <iostream>
+#include <fstream>
 
 class Request
 {
@@ -20,7 +22,7 @@ class Request
 		std::string							_type; 		//content type
 		size_t								_size;		//content size
 		std::string							_name;		//filename
-		std::string							_body;		//use string or char* ?
+		std::string							_body;
 		size_t								_length;	//request string size
 		int									_status;
 		std::map<std::string, std::string>	_headers;

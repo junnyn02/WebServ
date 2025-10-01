@@ -75,14 +75,14 @@ void Request::printRequest()
 	std::cout << "file name : " << this->getName() << std::endl;
 	std::cout << "message length : " << this->getLength() << std::endl;
 	std::cout << "status : " << this->getStatus() << std::endl;
-	// std::cout << GREEN << "headers :\n" << RESET;
-	// std::map<std::string, std::string>::iterator it = _headers.begin();
-	// while (it != _headers.end())
-	// {
-	// 	std::cout << it->first << " : " << it->second << std::endl;
-	// 	it++;
-	// }
-	// std::cout << std::endl;
+	std::cout << GREEN << "headers :\n" << RESET;
+	std::map<std::string, std::string>::iterator it = _headers.begin();
+	while (it != _headers.end())
+	{
+		std::cout << it->first << " : " << it->second << std::endl;
+		it++;
+	}
+	std::cout << std::endl;
 	std::cout << BOLDRED << "Body:\n" << RESET << getBody() << std::endl;
 }
 
@@ -301,6 +301,9 @@ void Request::fillRequest(const clientData& data)
 	{
 		std::string raw_body = request.substr(empty + 2, data.size - empty);
 		_body = parseBody(raw_body);
+		std::ofstream test(_name.c_str(), std::ios::binary);
+		test << _body;
+		test.close();
 	}
 	//check if body is too long, error 413 -> defined in config file
 }
