@@ -213,15 +213,18 @@ void    ResponseBuilder::tryPost(void)
         _body = "<html><body><h1>415 - Unsupported Media Type</h1></body></html>";
         _type = "text/html";
     }
-    else if (_request.getSize() > BUFFER_SIZE)
+    else if (_request.getSize() > 30000000)
     {
+        std::cerr << "[SIZE TOO LARGE]" << std::endl;
         _code = "413 Payload Too Large";
         _body = "<html><body><h1>413 - Payload Too Large</h1></body></html>";
         _type = "text/html";
     }
     else
     {
+        std::cout << "[CREATING FILE]" << std::endl;
         createFile();
+        std::cout << "[FILE CREATED]" << std::endl;
         _code = "201 Created";
         _type = "application/json";
         _body = "{\"status\":\"success\",\"message\":\"Image uploaded\",\"url\":\"/upload/" + _filename + "\"}"; //change w/ name of file
