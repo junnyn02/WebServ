@@ -25,22 +25,67 @@ const std::string  ResponseBuilder::getCode(void) const
     return (this->_code);
 }
 
-const std::string    ResponseBuilder::exec(void)
+const std::string    ResponseBuilder::sendResponse(void)
 {
+    std::string response;
     if (_request.getMethod() == "GET")
     {
-        tryGet();
+        if (_request.getURI() == "/list-uploads")
+            buildListUploads();
+        else
+        {    tryGet();
+        _type = getType();
+        _body = getBody();}
     }
-    std::string response, body;
+    else if (_request.getMethod() == "POST")
+    {
+        tryPost();
+    }
     response = "HTTP/1.1 " + getCode() + "\r\n";
     response.append("Server: webserv\nDate: " + getDate() + "\r\n");
-    _type = getType();
     response.append("Content-Type: " + _type + "\r\n");
-    body = getBody();
-    response.append("Content-Length: " + size_t_to_string(body.length()) + "\r\n");
-    response.append("\r\n" + body);
-    //std::cout << GREEN << "RESPONSE =" << RESET << std::endl << response << std::endl;
+    response.append("Content-Length: " + size_t_to_string(_body.length()) + "\r\n");
+    if (_code == "201 Created")
+        response.append("Location: /uploads/" + _request.getURI() + "\r\n"); //URI = filename ?
+    response.append("\r\n" + _body);
+    // std::cout << "RESPONSE =" << std::endl << response << std::endl;
     return response;
+}
+
+void ResponseBuilder::buildListUploads(void)
+{
+    std::string folder = "data/www/html/upload/";
+    DIR* dir = opendir(folder.c_str());
+    std::vector<std::string> images;
+
+    if (dir != NULL) {
+        struct dirent* ent;
+        while ((ent = readdir(dir)) != NULL) {
+            std::string name = ent->d_name;
+
+            // Ne pas inclure . et ..
+            if (name == "." || name == "..")
+                continue;
+
+            // Tu peux filtrer plus ici (par extension)
+            images.push_back("/upload/" + name);
+        }
+        closedir(dir);
+    }
+
+    // Formater en JSON
+    std::ostringstream oss;
+    oss << "[";
+    for (size_t i = 0; i < images.size(); ++i) {
+        oss << "\"" << images[i] << "\"";
+        if (i != images.size() - 1)
+            oss << ",";
+    }
+    oss << "]";
+    _body = oss.str();
+    _code = "200 OK";
+    _type = "application/json";
+    std::cout << "[LIST UPLOADS]" << _body << " | [CODE]: " << _code << " | [TYPE]: " << _type << std::endl;
 }
 
 bool isDirectoryAccessible(const std::string& path)
@@ -49,9 +94,9 @@ bool isDirectoryAccessible(const std::string& path)
     if (dir)
     {
         closedir(dir);
-        return true; // On peut ouvrir et lire le dossier
+        return true;
     }
-    return false; // Permission refusée ou erreur
+    return false;
 }
 
 void    ResponseBuilder::isDir(const std::string &path)
@@ -73,7 +118,7 @@ void    ResponseBuilder::isDir(const std::string &path)
                     this->_code = "403 Forbidden";
             }
             else
-                this->_code = "404 Not Found"; // Pas de index.html
+                this->_code = "404 Not Found";
         }
         else
             this->_code = "404 Not Found";
@@ -109,7 +154,78 @@ void    ResponseBuilder::tryGet(void)
         isFile(path);
     else
         this->_code = "403 Forbidden"; // Ni fichier ni dossier
-    std::cout << "code: " << this->_code << std::endl;
+    // std::cout << "code: " << this->_code << std::endl;
+}
+
+bool    ResponseBuilder::checkMime(void)
+{
+    // std::cout << "[CHECK_MIME] type is : " << _request.getType() << std::endl;
+    if (_request.getType() == "image/png" || _request.getType() == "image/jpeg" || _request.getType() == "image/jpg" || _request.getType() == "image/gif")
+        return true;
+    return false;
+}
+
+int checkIfFileExists(const std::string &filename)
+{
+  struct stat buffer;
+  return (stat(filename.c_str(), &buffer));
+}
+
+bool    ResponseBuilder::createFile(void)
+{
+    try
+    {
+        _filename = _request.getName();
+        std::string full_path = "data/www/html/upload/" + _filename;
+        if (checkIfFileExists(full_path) == 0)
+        {
+            int i = 1;
+            while (checkIfFileExists(full_path) == 0)
+            {
+                std::stringstream nb;
+                nb << i;
+                std::size_t found = _request.getName().find(".jpg");
+                if (found != std::string::npos)
+                    _filename.insert(found, nb.str());
+                full_path = "data/www/html/upload/" + _filename;
+                i++;
+            }
+        }
+        full_path = "data/www/html/upload/" + _filename;
+        std::ofstream   outfile(full_path.c_str(), std::ios::binary);
+        outfile.write(_request.getBody().c_str(), _request.getLength());
+        outfile.close();
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        return false;
+    }
+    return true;
+}
+
+void    ResponseBuilder::tryPost(void)
+{
+    // std::cout << _request.get
+    if (!checkMime())
+    {
+        _code = "415 Unsupported Media Type";
+        _body = "<html><body><h1>415 - Unsupported Media Type</h1></body></html>";
+        _type = "text/html";
+    }
+    else if (_request.getSize() > BUFFER_SIZE)
+    {
+        _code = "413 Payload Too Large";
+        _body = "<html><body><h1>413 - Payload Too Large</h1></body></html>";
+        _type = "text/html";
+    }
+    else
+    {
+        createFile();
+        _code = "201 Created";
+        _type = "application/json";
+        _body = "{\"status\":\"success\",\"message\":\"Image uploaded\",\"url\":\"/upload/" + _filename + "\"}"; //change w/ name of file
+    }
 }
 
 const std::string    ResponseBuilder::getDate(void) const

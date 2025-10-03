@@ -31,7 +31,7 @@
                             type="file" 
                             id="fileInput" 
                             name="image" 
-                            accept="image/*" 
+                            accept="image/png, image/jpeg, image/jpg, image/gif"
                             style="display: none;" 
                             onchange="handleUpload()" 
                             required
@@ -61,9 +61,9 @@
         const fileInput = document.getElementById("fileInput");
         const form = document.getElementById("uploadForm");
 
-        if (fileInput.files.length > 0) {
-        form.submit(); // ⬆️ Envoie le fichier au serveur
-        }
+        // if (fileInput.files.length > 0) {
+        // form.submit(); // ⬆️ Envoie le fichier au serveur
+        // }
     }
     </script>
 </body>

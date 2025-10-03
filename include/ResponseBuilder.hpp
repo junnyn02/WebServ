@@ -2,6 +2,7 @@
 
 #include "utils.hpp"
 #include "Request.hpp"
+#include "serverCore.hpp"
 
 class ResponseBuilder
 {
@@ -9,17 +10,25 @@ class ResponseBuilder
         std::string                         _code;
         Request                             _request;
         std::map<std::string, std::string>  _mime;
+        std::vector<std::string>            _gallery;
         std::string                         _type;
+        std::string                         _body;
+        std::string                         _filename;
 
     public:
         ResponseBuilder(const Request &);
         ~ResponseBuilder(void);
         
-        const std::string   exec(void);
         void                tryGet(void);
+        void                buildListUploads(void);
+        void                tryPost(void);
         void                isDir(const std::string &);
         void                isFile(const std::string &);
         
+        bool                checkMime(void);        
+        bool                createFile(void);
+
+        const std::string   sendResponse(void);
         const std::string   getCode(void) const;
         const std::string   getDate(void) const;
         const std::string   getType(void) const;
