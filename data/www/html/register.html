@@ -1,27 +1,47 @@
 <!DOCTYPE html>
 <html lang="fr">
-	<head>
-		<meta charset="UTF-8">
-		<link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-		<link rel="stylesheet" href="styles.css">
-		<title>Give me your data</title>
-	</head>
-	<body>
-		<div class="block">
-			<form id="register" action="register.php" enctype="application/x-www-form-urlencoded" method="post">
-				Name <input name="name"><br>
-				42 login <input name="login"><br>
-				Do you consent to share your data? <input name="consent" type="checkbox"><br>
-				<input name="submit" type="submit">
-			</form>
-		</div>
-		<div class="toggle-container">
-        <label class="switch">
-            <input type="checkbox" id="darkModeToggle">
-            <span class="slider"></span>
-        </label>
-        <span class="toggle-label">Mode sombre</span>
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <title>Register</title>
+</head>
+<body>
+    <div class="block">
+        <h1>Register your profile</h1>
+        <form id="register" action="register.php" method="post" class="form-container">
+            <div class="form-group">
+                <label for="first_name">First Name</label>
+                <input id="first_name" name="first_name" type="text" required>
+            </div>
+
+            <div class="form-group">
+                <label for="last_name">Last Name</label>
+                <input id="last_name" name="last_name" type="text" required>
+            </div>
+
+            <div class="form-group">
+                <label for="login">42 Login</label>
+                <input id="login" name="login" type="text" required>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <input id="consent" name="consent" type="checkbox">
+                <label for="consent">I consent to share my data</label>
+            </div>
+
+            <button type="submit" class="submit-btn">Register</button>
+        </form>
+        <a href="index.html" class="lien-perso">⬅ Back to Portfolio</a>
+        
+        <div class="toggle-container">
+            <label class="switch">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label">Mode sombre</span>
         </div>
-		<script src="darkmode.js"></script>
-	</body>
+    </div>
+    <script src="darkmode.js"></script>
+</body>
 </html>
