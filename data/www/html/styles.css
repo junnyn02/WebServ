@@ -125,6 +125,25 @@ button {
   cursor: default;
 }
 
+.delete-btn {
+  position: absolute;
+  bottom: 120px;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 32px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  user-select: none;
+  padding: 0;
+  line-height: 1;
+}
+
+.delete-btn:hover {
+  color: rgb(161, 30, 30);
+}
+
 body.dark-mode .image-box {
   border-color: #444;
   background-color: #1e1e1e;

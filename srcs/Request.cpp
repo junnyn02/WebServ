@@ -278,6 +278,7 @@ void Request::fillRequest(const clientData& data)
 	if (data.size == 0)													//might mess with chunking
 		return;
 	// std::string request(data.body, data.size);
+	std::cout << "[DATA BODY]: " << data.body << std::endl;
 	std::string request = data.body;
 	size_t it = request.find("\r\n");
 	while (it == 0)														//ignore empty lines before request line

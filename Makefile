@@ -8,6 +8,7 @@ SANFLAGS	:=	-fsanitize=address,undefined
 OBJ_PATH	:=	objects/
 INC_PATH	:=	include/
 SRC_PATH	:=	srcs/
+UPLOAD_PATH	:=	data/www/html/
 
 SRC			:=	main.cpp 
 SRC			+=	serverCore.cpp
@@ -23,7 +24,8 @@ OBJS 		:=	$(addprefix $(OBJ_PATH), $(OBJ))
 
 INCLUDE		:=	-I $(INC_PATH)
 
-all: $(NAME)
+all:	$(NAME)
+	@mkdir -p $(UPLOAD_PATH)/upload
 
 $(OBJ_PATH)%.o: $(SRC_PATH)%.cpp
 	@mkdir -p $(OBJ_PATH)
@@ -40,6 +42,7 @@ clean:
 
 fclean: clean
 	rm -f $(NAME)
+	rm -rf $(UPLOAD_PATH)/upload
 
 re: fclean all
 

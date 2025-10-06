@@ -22,6 +22,7 @@ class ResponseBuilder
         void                tryGet(void);
         void                buildListUploads(void);
         void                tryPost(void);
+        void                tryDelete(void);
         void                isDir(const std::string &);
         void                isFile(const std::string &);
         
@@ -29,6 +30,8 @@ class ResponseBuilder
         bool                createFile(void);
 
         const std::string   sendResponse(void);
+        const std::string   build204(void);
+        
         const std::string   getCode(void) const;
         const std::string   getDate(void) const;
         const std::string   getType(void) const;

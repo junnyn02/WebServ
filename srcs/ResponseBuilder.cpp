@@ -33,9 +33,13 @@ const std::string    ResponseBuilder::sendResponse(void)
         if (_request.getURI() == "/list-uploads")
             buildListUploads();
         else
-        {    tryGet();
-        _type = getType();
-        _body = getBody();}
+            tryGet();
+    }
+    else if (_request.getMethod() == "DELETE")
+    {
+        tryDelete();
+        if (_code == "204 No Content")
+            return (build204());
     }
     else if (_request.getMethod() == "POST")
     {
@@ -52,7 +56,7 @@ const std::string    ResponseBuilder::sendResponse(void)
     return response;
 }
 
-void ResponseBuilder::buildListUploads(void)
+void    ResponseBuilder::buildListUploads(void)
 {
     std::string folder = "data/www/html/upload/";
     DIR* dir = opendir(folder.c_str());
@@ -155,6 +159,8 @@ void    ResponseBuilder::tryGet(void)
     else
         this->_code = "403 Forbidden"; // Ni fichier ni dossier
     // std::cout << "code: " << this->_code << std::endl;
+    _type = getType();
+    _body = getBody();
 }
 
 bool    ResponseBuilder::checkMime(void)
@@ -193,7 +199,7 @@ bool    ResponseBuilder::createFile(void)
         }
         full_path = "data/www/html/upload/" + _filename;
         std::ofstream   outfile(full_path.c_str(), std::ios::binary);
-        outfile.write(_request.getBody().c_str(), _request.getLength());
+        outfile.write(_request.getBody().c_str(), _request.getBody().length());
         outfile.close();
     }
     catch(const std::exception& e)
@@ -228,6 +234,34 @@ void    ResponseBuilder::tryPost(void)
         _code = "201 Created";
         _type = "application/json";
         _body = "{\"status\":\"success\",\"message\":\"Image uploaded\",\"url\":\"/upload/" + _filename + "\"}"; //change w/ name of file
+    }
+}
+
+const std::string   ResponseBuilder::build204(void)
+{
+    std::string response;
+    response = "HTTP/1.1 " + getCode() + "\r\n";
+    response.append("Server: webserv\nDate: " + getDate() + "\r\n");
+    std::cout << "[RESPONSE] : " << response << std::endl;
+    return response;
+}
+
+void    ResponseBuilder::tryDelete(void)
+{
+    std::cout << "[TRY DELETE]" << std::endl;
+    std::string full_path = "data/www/html/upload/" + _request.getURI();
+    if (checkIfFileExists(full_path) == 0)
+    {
+        if (std::remove(full_path.c_str()) != 0)
+            _code = "403 Forbidden";
+        else
+            _code = "204 No Content";
+    }
+    _code = "404 Not Found";
+    if (_code != "204 No Content")
+    {
+        _type = getType();
+        _body = getBody();
     }
 }
 
