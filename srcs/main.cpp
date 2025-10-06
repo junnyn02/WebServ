@@ -1,6 +1,7 @@
 #include "serverCore.hpp"
 #include "Request.hpp"
 #include "ResponseBuilder.hpp"
+#include "Config.hpp"
 
 int	main(int ac, char** av)
 {
@@ -13,7 +14,17 @@ int	main(int ac, char** av)
 	/*
 		NEED TO : manage signal so it destroys the server correctly on SIGINT
 	*/
+	try
+	{
+		Config	conf(av[1]);
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+		return (1);
+	}
 	
+
 	serverCore serv;
 	ac == 1 ? serv.startServer() : serv.startServer(av[1]); // should add argv[1] : config file (-> parsing)
 
