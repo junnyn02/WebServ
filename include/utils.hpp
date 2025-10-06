@@ -13,7 +13,6 @@
 #include <sstream>
 #include <unistd.h>
 #include <dirent.h>
-#include <sys/stat.h>
 #include <netinet/in.h>
 
 std::string size_t_to_string(size_t n);

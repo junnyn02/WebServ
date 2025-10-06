@@ -2,18 +2,27 @@
 #include "Request.hpp"
 #include "ResponseBuilder.hpp"
 
-int	main(int, char**)
+int	main(int ac, char** av)
 {
-	serverCore serv;
+	if (ac > 2)
+	{
+		std::cerr << "" << std::endl;
+		return (1);
+	}
 
-	serv.startServer(); // should add argv[1] : config file (-> parsing)
+	/*
+		NEED TO : manage signal so it destroys the server correctly on SIGINT
+	*/
+	
+	serverCore serv;
+	ac == 1 ? serv.startServer() : serv.startServer(av[1]); // should add argv[1] : config file (-> parsing)
 
 	struct epoll_event events[MAX_EVENTS];
+	// map with client fd / client data
 
 	while (1)
 	{
-
-		int n_events = epoll_wait(serv.epoll_fd, events, MAX_EVENTS, -1);
+		int n_events = epoll_wait(serv.epoll_fd, events, MAX_EVENTS, 5000); // SET TIMEOUT (instead of -1)
 		if (n_events == -1)
 		{
 			std::cerr << "Error: epoll_wait" << std::endl;
@@ -25,27 +34,26 @@ int	main(int, char**)
 			// Event handling logic
 			if (events[i].data.fd == serv.getfd()) // New client connection
 				serv.acceptNewClients();
-			else // Data from an existing client
+			else // Data received from an existing client
 			{
-				clientData data = serv.receiveRequest(events[i].data.fd); 
-
-				Request fresh(data);
+				int client = events[i].data.fd;
+				// clientData data = 
+				serv.receiveRequest(client); 
+				
+				std::cout << "Trying to create Request clas for Client " << client << std::endl;
+				std::cout << "Body : " << serv.discussions[client].body << std::endl;
+				Request fresh(serv.discussions[client]);
 				ResponseBuilder	response(fresh);
 
-				fresh.printRequest(); // remove later
+				// fresh.printRequest(); // remove later
 			
-				std::string hello = response.sendResponse();
-
-				for (size_t i = 0; i < hello.length(); i++)
-					data.buffer[i] = hello.c_str()[i];
-				for (size_t i = hello.length(); i < BUFFER_SIZE; i++)
-					data.buffer[i] = 0;
-
-				data.size = hello.length();
-
-				serv.sendResponse(data);
-
-				memset(&data, 0, sizeof(clientData));
+				// data.body = response.sendResponse();
+				// data.size = data.body.length();
+				std::string resp = response.sendResponse();
+				serv.setResponse(client, resp, resp.length());
+				std::cout << "[RECEIVE RESPONSE]" << std::endl;
+				
+				serv.sendResponse(client);
 			}
 		}
 	}

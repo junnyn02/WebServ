@@ -277,7 +277,9 @@ void Request::fillRequest(const clientData& data)
 {
 	if (data.size == 0)													//might mess with chunking
 		return;
-	std::string request(data.buffer, data.size);
+	// std::string request(data.body, data.size);
+	std::cout << "[DATA BODY]: " << data.body << std::endl;
+	std::string request = data.body;
 	size_t it = request.find("\r\n");
 	while (it == 0)														//ignore empty lines before request line
 	{
@@ -287,7 +289,7 @@ void Request::fillRequest(const clientData& data)
 	std::string request_line = request.substr(0, it);
 	if (!parseRequestLine(request_line))
 		return;
-	size_t empty = request.find("\r\n\r\n") + 2;						//skip first CRLF
+	ssize_t empty = request.find("\r\n\r\n") + 2;						//skip first CRLF
 	std::string headers = request.substr(it + 2, empty - (it + 2));
 	if (!parseHeaders(headers))
 		return;
