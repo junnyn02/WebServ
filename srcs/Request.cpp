@@ -183,7 +183,7 @@ int Request::parseHeaders(std::string& headers)
 	}
 	if (_method == "POST")
 	{
-		std::map<std::string, std::string>::iterator it = _headers.find("Content-Length");
+		std::map<std::string, std::string>::iterator it = _headers.find("Content-Length"); //not really case insensitive
 		if (it == _headers.end())
 			it = _headers.find("content-length");
 		if (it == _headers.end())
@@ -285,9 +285,8 @@ int Request::parseRequestLine(const std::string& line)
 	return 1;
 }
 
-void Request::fillRequest(const std::string& data, int data_size)// clientData& data)
+void Request::fillRequest(const std::string& data, int data_size)
 {
-	//std::cout << "[DATA BODY]: " << data << std::endl;
 	std::string request = data;
 	size_t it = request.find("\r\n");
 	while (it == 0)
@@ -298,7 +297,7 @@ void Request::fillRequest(const std::string& data, int data_size)// clientData& 
 	std::string request_line = request.substr(0, it);
 	if (!parseRequestLine(request_line))
 		return;
-	ssize_t empty = request.find("\r\n\r\n") + 2;						//skip first CRLF
+	ssize_t empty = request.find("\r\n\r\n") + 2;
 	std::string headers = request.substr(it + 2, empty - (it + 2));
 	if (!parseHeaders(headers))
 		return;
@@ -308,14 +307,6 @@ void Request::fillRequest(const std::string& data, int data_size)// clientData& 
 		std::cerr << _status << " Bad request: claimed length inconsistent with received bytes\n";
 		return;
 	}
-	// if (_method == "POST")
-	// {
-	// 	std::string raw_body = request.substr(empty + 2, data_size - empty);
-	// 	_body = parseBody(raw_body);
-	// 	// std::ofstream test(_name.c_str(), std::ios::binary);
-	// 	// test << _body;
-	// 	// test.close();
-	// }
 	//check if body is too long, error 413 -> defined in config file
 }
 
