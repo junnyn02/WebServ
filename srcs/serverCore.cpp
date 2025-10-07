@@ -125,42 +125,84 @@ void	serverCore::acceptNewClients()
 
 		// REMOVE EPOLLET ??? GET LT . read into fd bit by bit loop by loop until done (true non blocking)
 		// Add the new client socket to the epoll interest list
-		event.events = EPOLLIN | EPOLLET; // Monitor for read events, edge-triggered (ET) (instead of Level-Triggered (LT) . single signal or repeating signals)
+		event.events = EPOLLIN; // | EPOLLET; // Monitor for read events, edge-triggered (ET) (instead of Level-Triggered (LT) . single signal or repeating signals)
 		event.data.fd = client_fd;
 		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &event) == -1) 
 		{
 			std::cerr << "Error: epoll_ctl: client_fd" << std::endl;
 			close(client_fd);
 		}
-		clientData data = {client_fd, 0, "", true};
-		discussions[client_fd] = data; // 
+		clientData data;
+		data.clientSocket = client_fd;
+		data.size = 0;
+		data.requestComplete = false;
+		data.headerComplete = false;
+		
+		discussions[client_fd] = data;
 		std::cout << "Client " << client_fd << " discussion created" << std::endl;
 	}
 }
 
-void	serverCore::receiveRequest(int client_fd)
+int	serverCore::receiveRequest(int fd)
 {
 	ssize_t valread;
 
 	char buffer[BUFFER_SIZE];
 
 	// Read data from the client
-	while ((valread = recv(client_fd, buffer, BUFFER_SIZE, 0)) > 0)
+	// while (
+	if ((valread = recv(fd, buffer, BUFFER_SIZE, 0)) > 0)
 	{
-		discussions[client_fd].body.append(buffer, valread);
-		discussions[client_fd].size += valread;
+		discussions[fd].body.append(buffer, valread);
+		discussions[fd].size += valread;
+
+		if (!discussions[fd].headerComplete && discussions[fd].body.find("\r\n\r\n") != std::string::npos)
+		{
+			discussions[fd].headerComplete = true;
+			discussions[fd].request.fillRequest(discussions[fd].body, discussions[fd].size);
+			if (discussions[fd].request.getSize() == 0)
+			{
+				discussions[fd].requestComplete = true;
+				return 1;
+			}
+			return 0;
+		}
+		if (discussions[fd].headerComplete)
+		{
+			int start = discussions[fd].body.find("\r\n\r\n") + 4;
+			if (discussions[fd].size - start == discussions[fd].request.getSize()) // Request complete
+			{
+				std::string body = discussions[fd].request.parseBody(discussions[fd].body);
+				discussions[fd].request.setBody(body);
+				discussions[fd].requestComplete = true;
+				//discussions[fd].request.printRequest();
+				return 1;
+			}
+			else
+				return 0;
+		}
 	}
 
 	if (valread == 0) // Client closed the connection
 	{
-		std::cout << "Client " << client_fd << " disconnected" << std::endl;
-		close(client_fd); // This automatically removes it from epoll
+		if (discussions[fd].requestComplete)
+		{
+			discussions[fd].request.setStatus(400);
+			return (1);
+		}
+		std::cout << "Client " << fd << " disconnected" << std::endl;
+		close(fd); // This automatically removes it from epoll
+		return -1;
 	}
-	else if (discussions[client_fd].size == -1) // internal server error ig
+	else // internal server error ig
 	{
 		std::cerr << "Error: recv" << std::endl;
-		close(client_fd);
+		close(fd);
+		return -1;
 	}
+
+	
+	return 0;
 }
 
 void	serverCore::sendResponse(int client_fd)

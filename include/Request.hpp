@@ -24,13 +24,12 @@ class Request
 		size_t								_size;		//content size
 		std::string							_name;		//filename
 		std::string							_body;
-		size_t								_length;	//request string size
 		int									_status;
 		std::map<std::string, std::string>	_headers;
-		Request();
 	public:
-		Request(const struct clientData&);
-		void fillRequest(const struct clientData&);
+		Request();
+		Request(const std::string&, int data_size);
+		void fillRequest(const std::string& data, int data_size);
 		int parseRequestLine(const std::string&);
 		int parseHeaders(std::string&);
 		std::string parseBody(const std::string&);
@@ -41,11 +40,13 @@ class Request
 		const std::string& getType() const;
 		const std::string& getName() const;
 		const std::string& getBody() const;
-		int getLength() const;
 		int getSize() const;
 		int getStatus() const;
 
+		void	setStatus(int);
 		void	setURI(const std::string &);
+		void	setBody(const std::string& body);
+
 };
 
 int	checkChar(const std::string& uri);

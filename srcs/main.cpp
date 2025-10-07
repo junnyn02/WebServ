@@ -38,22 +38,29 @@ int	main(int ac, char** av)
 			{
 				int client = events[i].data.fd;
 				// clientData data = 
-				serv.receiveRequest(client); 
+				int status = serv.receiveRequest(client); 
 				
-				std::cout << "Trying to create Request clas for Client " << client << std::endl;
-				std::cout << "Body : " << serv.discussions[client].body << std::endl;
-				Request fresh(serv.discussions[client]);
-				ResponseBuilder	response(fresh);
+				 if (status > 0)
+				{
+					// std::cout << "Trying to create Request clas for Client " << client << std::endl;
+					// std::cout << "Body : " << serv.discussions[client].body << std::endl;
+					// Request fresh(serv.discussions[client]);
+					serv.discussions[client].request.printRequest();
+					ResponseBuilder	response(serv.discussions[client].request);
 
-				// fresh.printRequest(); // remove later
-			
-				// data.body = response.sendResponse();
-				// data.size = data.body.length();
-				std::string resp = response.sendResponse();
-				serv.setResponse(client, resp, resp.length());
-				std::cout << "[RECEIVE RESPONSE]" << std::endl;
+					// fresh.printRequest(); // remove later
 				
-				serv.sendResponse(client);
+					// data.body = response.sendResponse();
+					// data.size = data.body.length();
+					std::string resp = response.sendResponse();
+					serv.setResponse(client, resp, resp.length());
+					std::cout << "[RECEIVE RESPONSE]" << std::endl;
+					
+					serv.sendResponse(client);
+				}
+				else if (status < 0)
+					serv.discussions.erase(client);
+				/* else status == 0 -> request incomplete still receiving */
 			}
 		}
 	}
