@@ -1,6 +1,7 @@
 #pragma once
 
 #include "utils.hpp"
+#include "Request.hpp"
 
 #define EXIT_FAILURE 1
 #define INTERNAL_SERVER_ERROR 500
@@ -13,7 +14,10 @@ typedef struct clientData
 	int			clientSocket;
 	int			size;
 	std::string	body;
-	bool		read;
+	// bool		requestChunked;
+	bool		requestComplete;
+	bool		headerComplete;
+	Request		request;
 	// bool	write;
 } clientData;
 
@@ -57,7 +61,7 @@ private:
 	void		setNonBlocking(int fd);
 	void		acceptNewClients();
 
-	void		receiveRequest(int fd);
+	int		receiveRequest(int fd);
 	void		sendResponse(int fd);
 	// clientData	receiveRequest(int fd);
 	// void		sendResponse(clientData);

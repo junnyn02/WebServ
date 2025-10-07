@@ -7,10 +7,12 @@ Request::Request()
 	_uri = "";
 	_type = "";
 	_size = 0;
+	_name = "";
+	_body = "";
 	_status = 0;
 }
 
-Request::Request(const clientData& data)
+Request::Request(const std::string& data, int data_size) //const clientData& data)
 {
 	_method = "";
 	_uri = "";
@@ -18,9 +20,8 @@ Request::Request(const clientData& data)
 	_size = 0;
 	_name = "";
 	_body = "";
-	_length = data.size;
 	_status = 0;
-	this->fillRequest(data);
+	this->fillRequest(data, data_size);
 }
 
 const std::string& Request::getMethod() const
@@ -48,11 +49,6 @@ const std::string& Request::getBody() const
 	return (_body);
 }
 
-int Request::getLength() const
-{
-	return (_length);
-}
-
 int Request::getSize() const
 {
 	return (_size);
@@ -65,15 +61,12 @@ int Request::getStatus() const
 
 void Request::printRequest()
 {
-	if (_length == 0)
-		return;
 	std::cout << BOLDRED<<  "Request\n" << RESET;
 	std::cout << "method : " << this->getMethod() << std::endl;
 	std::cout << "uri : " << this->getURI() << std::endl;
 	std::cout << "content type : " << this->getType() << std::endl;
 	std::cout << "content size : " << this->getSize() << std::endl;
 	std::cout << "file name : " << this->getName() << std::endl;
-	std::cout << "message length : " << this->getLength() << std::endl;
 	std::cout << "status : " << this->getStatus() << std::endl;
 	std::cout << GREEN << "headers :\n" << RESET;
 	std::map<std::string, std::string>::iterator it = _headers.begin();
@@ -209,7 +202,7 @@ int Request::parseRequestLine(const std::string& line)
 	return 1;
 }
 
-std::string Request::parseBody(const std::string& raw)// check for empty body first?
+std::string Request::parseBody(const std::string& raw)
 {
 	if (_type.find("multipart/form-data") == std::string::npos)
 	{
@@ -226,7 +219,8 @@ std::string Request::parseBody(const std::string& raw)// check for empty body fi
 	}
 	pos += 9;
 	std::string boundary = _type.substr(pos, _type.length() - pos);
-	pos = raw.find(boundary);
+	size_t empty = raw.find("\r\n\r\n") + 4;
+	pos = raw.find(boundary, empty);
 	if (pos == std::string::npos)
 	{
 		_status = 400;
@@ -268,18 +262,17 @@ std::string Request::parseBody(const std::string& raw)// check for empty body fi
 	}
 	pos += 14;
 	_type = header.substr(pos, header.length() - pos);
-	end = raw.find("\r\n\r\n");
-	std::string body = raw.substr(end + 4, _size);
+	end = raw.find("\r\n\r\n", pos);
+	end += 4;
+	end = raw.find("\r\n\r\n", end);
+	std::string body = raw.substr(end + 4, _size - header.length());
 	return body;
 }
 
-void Request::fillRequest(const clientData& data)
+void Request::fillRequest(const std::string& data, int data_size)// clientData& data)
 {
-	if (data.size == 0)													//might mess with chunking
-		return;
-	// std::string request(data.body, data.size);
-	std::cout << "[DATA BODY]: " << data.body << std::endl;
-	std::string request = data.body;
+	//std::cout << "[DATA BODY]: " << data << std::endl;
+	std::string request = data;
 	size_t it = request.find("\r\n");
 	while (it == 0)														//ignore empty lines before request line
 	{
@@ -293,24 +286,34 @@ void Request::fillRequest(const clientData& data)
 	std::string headers = request.substr(it + 2, empty - (it + 2));
 	if (!parseHeaders(headers))
 		return;
-	if (empty + 2 > data.size)
+	if (empty + 2 > data_size)
 	{
 		_status = 400;
 		std::cerr << _status << " Bad request: claimed length inconsistent with received bytes\n";
 		return;
 	}
-	if (_method == "POST")
-	{
-		std::string raw_body = request.substr(empty + 2, data.size - empty);
-		_body = parseBody(raw_body);
-		// std::ofstream test(_name.c_str(), std::ios::binary);
-		// test << _body;
-		// test.close();
-	}
+	// if (_method == "POST")
+	// {
+	// 	std::string raw_body = request.substr(empty + 2, data_size - empty);
+	// 	_body = parseBody(raw_body);
+	// 	// std::ofstream test(_name.c_str(), std::ios::binary);
+	// 	// test << _body;
+	// 	// test.close();
+	// }
 	//check if body is too long, error 413 -> defined in config file
 }
 
 void	Request::setURI(const std::string &new_str)
 {
 	this->_uri = new_str;
+}
+
+void	Request::setStatus(int status)
+{
+	this->_status = status;
+}
+
+void	Request::setBody(const std::string& body)
+{
+	this->_body = body;
 }
