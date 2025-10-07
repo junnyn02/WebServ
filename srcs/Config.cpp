@@ -11,7 +11,7 @@ Config::Config(const std::string &filename)
 	infile.close();
 	// std::cout << _file << std::endl;
 	findHTTP();
-	findServor;
+	// findServor;
 }
 
 void Config::findHTTP(void)
