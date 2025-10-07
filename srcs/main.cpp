@@ -14,15 +14,15 @@ int	main(int ac, char** av)
 	/*
 		NEED TO : manage signal so it destroys the server correctly on SIGINT
 	*/
-	try
-	{
-		Config	conf(av[1]);
-	}
-	catch(const std::exception& e)
-	{
-		std::cerr << e.what() << '\n';
-		return (1);
-	}
+	// try
+	// {
+	// 	Config	conf(av[1]);
+	// }
+	// catch(const std::exception& e)
+	// {
+	// 	std::cerr << e.what() << '\n';
+	// 	return (1);
+	// }
 	
 
 	serverCore serv;

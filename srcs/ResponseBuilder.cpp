@@ -179,6 +179,7 @@ int checkIfFileExists(const std::string &filename)
 
 bool    ResponseBuilder::createFile(void)
 {
+    std::string	param[4] = { ".jpg", ".jpeg", ".png", ".gif" };
     try
     {
         _filename = _request.getName();
@@ -190,9 +191,14 @@ bool    ResponseBuilder::createFile(void)
             {
                 std::stringstream nb;
                 nb << i;
-                std::size_t found = _request.getName().find(".jpg");
-                if (found != std::string::npos)
-                    _filename.insert(found, nb.str());
+                std::size_t found;
+                for (int j = 0; j < 4; j++)
+                {
+                    found = _request.getName().find(param[j]);
+                    if (found != std::string::npos)
+                        break;
+                }
+                _filename.insert(found, nb.str());
                 full_path = "data/www/html/upload/" + _filename;
                 i++;
             }
