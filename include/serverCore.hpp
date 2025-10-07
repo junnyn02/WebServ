@@ -58,15 +58,19 @@ private:
 	void		serverError(std::string);
 	void		startServer();
 	void		startServer(char *);
-	void		setNonBlocking(int fd);
+	void		setNonBlocking(int);
+	void		changeSocketState(int, int);
 	void		acceptNewClients();
 
-	int		receiveRequest(int fd);
-	void		sendResponse(int fd);
+	void		resetDiscussion(int);
+	void		removeClient(int);
+
+	int			receiveRequest(int);
+	void		sendResponse(int); //, const std::string &,const std::vector<char> &);
 	// clientData	receiveRequest(int fd);
 	// void		sendResponse(clientData);
 
 	int			getfd();
-	clientData	getData(int client_fd);
+	clientData	getData(int);
 	void		setResponse(int, std::string&, ssize_t);
 };

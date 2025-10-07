@@ -7,6 +7,7 @@
 #include <fstream>
 #include <fcntl.h>
 #include <ctime>
+#include <csignal>
 #include <cstring>
 #include <cstdlib>
 #include <map>

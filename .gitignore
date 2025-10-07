@@ -1,6 +1,9 @@
 # Prerequisites
 *.d
 
+# Uploaded files
+data/www/html/upload/*
+
 # Compiled Object files
 objects
 objects/*
@@ -49,3 +52,4 @@ webserv
 *.txt
 
 test
+out
