@@ -202,7 +202,7 @@ int Request::parseRequestLine(const std::string& line)
 	return 1;
 }
 
-std::string Request::parseBody(const std::string& raw)// check for empty body first?
+std::string Request::parseBody(const std::string& raw)
 {
 	if (_type.find("multipart/form-data") == std::string::npos)
 	{
@@ -263,13 +263,15 @@ std::string Request::parseBody(const std::string& raw)// check for empty body fi
 	pos += 14;
 	_type = header.substr(pos, header.length() - pos);
 	end = raw.find("\r\n\r\n", pos);
-	std::string body = raw.substr(end + 4, _size);
+	end += 4;
+	end = raw.find("\r\n\r\n", end);
+	std::string body = raw.substr(end + 4, _size - header.length());
 	return body;
 }
 
 void Request::fillRequest(const std::string& data, int data_size)// clientData& data)
 {
-	std::cout << "[DATA BODY]: " << data << std::endl;
+	//std::cout << "[DATA BODY]: " << data << std::endl;
 	std::string request = data;
 	size_t it = request.find("\r\n");
 	while (it == 0)														//ignore empty lines before request line

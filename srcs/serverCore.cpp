@@ -175,6 +175,7 @@ int	serverCore::receiveRequest(int fd)
 				std::string body = discussions[fd].request.parseBody(discussions[fd].body);
 				discussions[fd].request.setBody(body);
 				discussions[fd].requestComplete = true;
+				//discussions[fd].request.printRequest();
 				return 1;
 			}
 			else
