@@ -205,11 +205,38 @@ int	serverCore::receiveRequest(int fd)
 	return 0;
 }
 
-void	serverCore::sendResponse(int client_fd)
+void serverCore::sendResponse(int client_fd, const std::string &header, const std::vector<char> &body)
 {
-	// /!\ might need to setup EPOLLOUT to the epoll event to know how to send etc
-	send(client_fd, discussions[client_fd].body.c_str(), discussions[client_fd].size, 0); // do we need flags ???
-	close(client_fd);
+    ssize_t sent;
+    size_t total = 0;
+
+    // Envoi du header (string)
+    while (total < header.size())
+    {
+        sent = send(client_fd, header.c_str() + total, header.size() - total, 0);
+        if (sent <= 0)
+        {
+            perror("send header");
+            close(client_fd);
+            return;
+        }
+        total += sent;
+    }
+    // Envoi du body (vector<char>)
+    total = 0;
+    while (total < body.size())
+    {
+        sent = send(client_fd, body.data() + total, body.size() - total, 0);
+        if (sent <= 0)
+        {
+            perror("send body");
+            close(client_fd);
+            return;
+        }
+        total += sent;
+    }
+
+    close(client_fd);
 }
 
 int	serverCore::getfd()

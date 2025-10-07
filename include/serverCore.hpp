@@ -62,7 +62,7 @@ private:
 	void		acceptNewClients();
 
 	int		receiveRequest(int fd);
-	void		sendResponse(int fd);
+	void		sendResponse(int, const std::string &,const std::vector<char> &);
 	// clientData	receiveRequest(int fd);
 	// void		sendResponse(clientData);
 

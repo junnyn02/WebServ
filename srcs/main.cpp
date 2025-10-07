@@ -14,15 +14,15 @@ int	main(int ac, char** av)
 	/*
 		NEED TO : manage signal so it destroys the server correctly on SIGINT
 	*/
-	// try
-	// {
-	// 	Config	conf(av[1]);
-	// }
-	// catch(const std::exception& e)
-	// {
-	// 	std::cerr << e.what() << '\n';
-	// 	return (1);
-	// }
+	try
+	{
+		Config	conf(av[1]);
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+		return (1);
+	}
 	
 
 	serverCore serv;
@@ -63,11 +63,11 @@ int	main(int ac, char** av)
 				
 					// data.body = response.sendResponse();
 					// data.size = data.body.length();
-					std::string resp = response.sendResponse();
-					serv.setResponse(client, resp, resp.length());
-					std::cout << "[RECEIVE RESPONSE]" << std::endl;
-					
-					serv.sendResponse(client);
+					// std::string header = response.getHeader();
+					// std::vector<char> body = response.getBody();
+					// serv.setResponse(client, header, header.size());
+					// std::cout << "[RECEIVE RESPONSE]" << std::endl;
+					serv.sendResponse(client, response.getHeader(), response.getBody());
 				}
 				else if (status < 0)
 					serv.discussions.erase(client);
