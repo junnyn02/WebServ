@@ -86,8 +86,6 @@ Should rework parsing to handle empty body depending on content-type.
 
 std::string Request::parseBody(const std::string& raw)
 {
-	if (_size == 0)
-		return "";
 	if (_type.find("multipart/form-data") == std::string::npos)
 	{
 		_status = 415;
@@ -103,7 +101,8 @@ std::string Request::parseBody(const std::string& raw)
 	}
 	pos += 9;
 	std::string boundary = _type.substr(pos, _type.length() - pos);
-	pos = raw.find(boundary);
+	size_t empty = raw.find("\r\n\r\n") + 4;
+	pos = raw.find(boundary, empty);
 	if (pos == std::string::npos)
 	{
 		_status = 400;
@@ -136,9 +135,7 @@ std::string Request::parseBody(const std::string& raw)
 	}
 	end -= 1;
 	_name = header.substr(pos, end - pos);
-	pos = header.find("Content-Type: image/");
-	if (pos == std::string::npos)
-		pos = header.find("content-type: image/");
+	pos = header.find("Content-Type: image/");					//might be case insensitive
 	if (pos == std::string::npos)
 	{
 		_status = 415;
@@ -147,8 +144,10 @@ std::string Request::parseBody(const std::string& raw)
 	}
 	pos += 14;
 	_type = header.substr(pos, header.length() - pos);
-	end = raw.find("\r\n\r\n");
-	std::string body = raw.substr(end + 4, _size);
+	end = raw.find("\r\n\r\n", pos);
+	end += 4;
+	end = raw.find("\r\n\r\n", end);
+	std::string body = raw.substr(end + 4, _size - header.length());
 	return body;
 }
 
@@ -284,73 +283,6 @@ int Request::parseRequestLine(const std::string& line)
 		return 0;
 	}
 	return 1;
-}
-
-std::string Request::parseBody(const std::string& raw)
-{
-	if (_type.find("multipart/form-data") == std::string::npos)
-	{
-		_status = 415;
-		std::cerr << _status << " Unsupported Media Type\n";
-		return "";
-	}
-	size_t pos = _type.find("boundary=");
-	if (pos == std::string::npos)
-	{
-		_status = 400;
-		std::cerr << _status << " Bad request: missing media header\n";
-		return "";
-	}
-	pos += 9;
-	std::string boundary = _type.substr(pos, _type.length() - pos);
-	size_t empty = raw.find("\r\n\r\n") + 4;
-	pos = raw.find(boundary, empty);
-	if (pos == std::string::npos)
-	{
-		_status = 400;
-		std::cerr << _status << " Bad request: missing media header\n";
-		return "";
-	}
-	pos += boundary.length();
-	size_t end = raw.find("\r\n\r\n", pos);
-	if (end == std::string::npos)
-	{
-		_status = 400;
-		std::cerr << _status << " Bad request: missing CRLF\n";
-		return "";
-	}
-	std::string header = raw.substr(pos, end - pos);
-	pos = header.find("filename");
-	if (pos == std::string::npos)
-	{
-		_status = 400;
-		std::cerr << _status << " Bad request: missing file name\n";	//should we accept this?
-		return "";
-	}
-	pos += 10;
-	end = header.find("\r\n", pos);
-	if (end == std::string::npos)
-	{
-		_status = 400;
-		std::cerr << _status << " Bad request: missing CRLF\n";
-		return "";
-	}
-	end -= 1;
-	_name = header.substr(pos, end - pos);
-	pos = header.find("Content-Type: image/");					//might be case insensitive
-	if (pos == std::string::npos)
-	{
-		_status = 415;
-		std::cerr << _status << " Unsupported Media Type\n";		//or bad request?
-		return "";
-	}
-	pos += 14;
-	_type = header.substr(pos, header.length() - pos);
-	end = raw.find("\r\n\r\n", pos);
-	end += 4;
-	end = raw.find("\r\n\r\n", end);
-	std::string body = raw.substr(end + 4, _size - header.length());
-	return body;
 }
 
 void Request::fillRequest(const std::string& data, int data_size)// clientData& data)
