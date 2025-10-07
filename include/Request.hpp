@@ -32,6 +32,7 @@ class Request
 		void fillRequest(const std::string& data, int data_size);
 		int parseRequestLine(const std::string&);
 		int parseHeaders(std::string&);
+		void lowerKeys(std::map<std::string, std::string>& headers);
 		std::string parseBody(const std::string&);
 		void printRequest();
 

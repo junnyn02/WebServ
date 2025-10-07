@@ -148,6 +148,7 @@ std::string Request::parseBody(const std::string& raw)
 	end += 4;
 	end = raw.find("\r\n\r\n", end);
 	std::string body = raw.substr(end + 4, _size - header.length());
+	_size -=header.length();
 	return body;
 }
 
@@ -158,6 +159,15 @@ std::string removeSpace(const std::string& line)
 		i++;
 	std::string new_line = line.substr(i, line.length() - i);
 	return new_line;
+}
+
+void lowerKey(std::string& key)
+{
+	for (size_t i = 0; i < key.length(); i++)
+	{
+		if (key[i] >= 'A' && key[i] <= 'Z')
+			key[i] += 32;
+	}
 }
 
 int Request::parseHeaders(std::string& headers)
@@ -174,6 +184,7 @@ int Request::parseHeaders(std::string& headers)
 			return 0;
 		}
 		std::string key = pair.substr(0, colon);
+		lowerKey(key);
 		std::string raw_value = pair.substr(colon + 1, pair.length() - 2);
 		std::string value = removeSpace(raw_value);
 		_headers.insert(std::pair<std::string, std::string>(key, value));
@@ -183,9 +194,7 @@ int Request::parseHeaders(std::string& headers)
 	}
 	if (_method == "POST")
 	{
-		std::map<std::string, std::string>::iterator it = _headers.find("Content-Length"); //not really case insensitive
-		if (it == _headers.end())
-			it = _headers.find("content-length");
+		std::map<std::string, std::string>::iterator it = _headers.find("content-length");
 		if (it == _headers.end())
 		{
 			_status = 411;
@@ -197,9 +206,7 @@ int Request::parseHeaders(std::string& headers)
 			std::stringstream convert(it->second);
 			convert >> _size;
 		}
-		it = _headers.find("Content-Type");
-		if (it == _headers.end())
-			it = _headers.find("content-type");
+		it = _headers.find("content-type");
 		if (it == _headers.end())
 			_type = "octet-stream";
 		else
