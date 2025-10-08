@@ -5,6 +5,7 @@ Request::Request()
 {
 	_method = "";
 	_uri = "";
+	_query = "";
 	_type = "";
 	_size = 0;
 	_name = "";
@@ -12,10 +13,11 @@ Request::Request()
 	_status = 0;
 }
 
-Request::Request(const std::string& data, int data_size) //const clientData& data)
+Request::Request(const std::string& data, int data_size)
 {
 	_method = "";
 	_uri = "";
+	_query = "";
 	_type = "";
 	_size = 0;
 	_name = "";
@@ -32,6 +34,11 @@ const std::string& Request::getMethod() const
 const std::string& Request::getURI() const
 {
 	return (_uri);
+}
+
+const std::string& Request::getQuery() const
+{
+	return (_query);
 }
 
 const std::string& Request::getType() const
@@ -64,6 +71,7 @@ void Request::printRequest()
 	std::cout << BOLDRED<<  "Request\n" << RESET;
 	std::cout << "method : " << this->getMethod() << std::endl;
 	std::cout << "uri : " << this->getURI() << std::endl;
+	std::cout << "query : " << this->getQuery() << std::endl;
 	std::cout << "content type : " << this->getType() << std::endl;
 	std::cout << "content size : " << this->getSize() << std::endl;
 	std::cout << "file name : " << this->getName() << std::endl;
@@ -78,11 +86,6 @@ void Request::printRequest()
 	std::cout << std::endl;
 	std::cout << BOLDRED << "Body:\n" << RESET << getBody() << std::endl;
 }
-
-/*
-POST requests don't always have a body, ex: a form can be included in a query string instead of body.
-Should rework parsing to handle empty body depending on content-type.
-*/
 
 std::string Request::parseBody(const std::string& raw)
 {
@@ -215,7 +218,7 @@ int Request::parseHeaders(std::string& headers)
 	return 1;
 }
 
-std::string normalizeUri(const std::string& raw)// rework to parse query strings
+std::string Request::normalizeUri(const std::string& raw)
 {
 	std::string clean;
 	if (raw.find("http://localhost8080") == 0)
@@ -224,8 +227,9 @@ std::string normalizeUri(const std::string& raw)// rework to parse query strings
 		clean = raw;
 	if (clean.find("?") != std::string::npos)
 	{
-		size_t query = clean.find("?");
-		clean.erase(query);
+		size_t query = clean.find("?") + 1;
+		_query = raw.substr(query, raw.length() - query);
+		clean.erase(query - 1);
 	}
 	return clean;
 }

@@ -46,6 +46,7 @@ int	main(int ac, char** av)
 					// std::cout << "Body : " << serv.discussions[client].body << std::endl;
 					// Request fresh(serv.discussions[client]);
 					serv.discussions[client].request.printRequest();
+																											//call CGI here? if else
 					ResponseBuilder	response(serv.discussions[client].request);
 
 					// fresh.printRequest(); // remove later

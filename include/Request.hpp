@@ -20,6 +20,7 @@ class Request
 	private:
 		std::string							_method;
 		std::string							_uri;
+		std::string							_query;
 		std::string							_type; 		//content type
 		size_t								_size;		//content size
 		std::string							_name;		//filename
@@ -31,6 +32,7 @@ class Request
 		Request(const std::string&, int data_size);
 		void fillRequest(const std::string& data, int data_size);
 		int parseRequestLine(const std::string&);
+		std::string normalizeUri(const std::string& raw);
 		int parseHeaders(std::string&);
 		void lowerKeys(std::map<std::string, std::string>& headers);
 		std::string parseBody(const std::string&);
@@ -38,6 +40,7 @@ class Request
 
 		const std::string& getMethod() const;
 		const std::string& getURI() const;
+		const std::string& getQuery() const;
 		const std::string& getType() const;
 		const std::string& getName() const;
 		const std::string& getBody() const;
