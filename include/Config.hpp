@@ -1,13 +1,18 @@
 #pragma once
 
 #include "utils.hpp"
+#include "Server.hpp"
+
+class Server;
 
 class Config
 {
     private:
-		std::map<std::string, std::map<std::string::iterator, std::string::iterator> >	_context; //maybe w/ iterators pour parcourir seulement context http
-		// std::map<std::string::iterator, std::string::iterator>					_part;
-		std::string	_file;
+		// std::string::iterator	_http_begin;
+		// std::string::iterator	_http_end;
+		std::string			_file;
+		std::string			_context;
+		std::vector<Server>	_server;
 
     public:
         Config(const std::string &);
@@ -18,3 +23,5 @@ class Config
 
 		std::string::iterator	checkEnd(std::string::iterator &);
 };
+
+bool	checkComment(std::string &str, const size_t &found);

@@ -11,67 +11,71 @@ Config::Config(const std::string &filename)
 	infile.close();
 	// std::cout << _file << std::endl;
 	findHTTP();
+	// std::cout << _context << std::endl;
 	findServer();
 }
 
 void Config::findHTTP(void)
 {
-	std::map<size_t, size_t>	part;
 	size_t	found = _file.find("http");
-	if (found == std::string::npos)
-		throw (std::runtime_error("No HTTP context find"));
-	std::string::reverse_iterator rit = _file.rend() - found;
-	while (rit != _file.rend() && isspace(*rit))
-		++rit;
-	if (*rit == '#')
-		throw (std::runtime_error("No HTTP context find"));
-	std::string::iterator it = _file.begin() + found + 4;
+	if (found == std::string::npos || !checkComment(_context, found))
+		throw (std::runtime_error("No HTTP context found"));
+	std::string::iterator it = _file.begin() + found + strlen("http");
 	while (isspace(*it))
 		++it;
 	if (*it != '{')
 		throw (std::runtime_error("Syntax (bracket) Error"));
-	size_t	first = std::distance(_file.begin(), it);
-	size_t	last = std::distance(_file.begin(), checkEnd(it));
-	part.insert(std::pair<size_t, size_t>(first, last));
-	// _context.insert(std::pair<std::string, std::map<std::string::iterator, std::string::iterator> >("http", part));
+	std::string parsed(it, checkEnd(it));
+	_context = parsed;
 }
 
 void	Config::findServer(void)
 {
-	// std::map<size_t, size_t>	part;
-	// size_t	found = _file.find("server");
-	// if (found == std::string::npos)
-	// 	throw (std::runtime_error("No server context find"));
-	// std::string::reverse_iterator rit = _file.rend() - found;
-	// while (rit != _file.rend() && isspace(*rit))
-	// 	++rit;
-	// if (*rit == '#')
-	// 	throw (std::runtime_error("No server context find"));
-	// std::string::iterator it = _file.begin() + found + 4;
-	// while (isspace(*it))
-	// 	++it;
-	// if (*it != '{')
-	// 	throw (std::runtime_error("Syntax (bracket) Error"));
-	// size_t	first = std::distance(_file.begin(), it);
-	// size_t	last = std::distance(_file.begin(), checkEnd(it));
-	// part.insert(std::pair<size_t, size_t>(first, last));
-	// _context.insert(std::pair<std::string, std::map<size_t, size_t> >("server", part));
+	size_t	found = 0;
+	while (1)
+	{
+		found = _context.find("server", found);
+		if (found != std::string::npos && checkComment(_context, found))
+		{
+			std::string::iterator it = _context.begin() + found + strlen("server");
+			while (isspace(*it))
+				++it;
+			if (*it == '{')
+			{
+				std::string parsed(it, checkEnd(it));
+				Server server(parsed);
+				_server.push_back(server);
+			}
+			// if (*it != '{')
+			// 	// continue;
+			// 	throw (std::runtime_error("Syntax serv(bracket) Error"));
+			// std::string parsed(it, checkEnd(it));
+			// Server server(parsed);
+			// _server.push_back(server);
+		}
+		if (found == std::string::npos)
+			break ;
+		found += strlen("server");
+	}
+	if (_server.size() == 0)
+		throw(std::runtime_error("No Server Context found"));
 }
 
 std::string::iterator	Config::checkEnd(std::string::iterator &it)
 {
 	std::string::iterator	tmp = it + 1;
 	std::string::iterator	last;
-	int count = 1;
+	int count = 0;
 	while (tmp != _file.end())
 	{
+		//check si les brackets sont commentes ?
 		if (*tmp == '{')
 			count += 1;
 		if (*tmp == '}' && count > 0)
 			count -= 1;
 		else if (*tmp == '}' && count == 0)
 		{
-			last = tmp;
+			last = tmp + 1;
 			return last;
 		}
 		++tmp;
@@ -81,6 +85,15 @@ std::string::iterator	Config::checkEnd(std::string::iterator &it)
 	return last;
 }
 
+bool	checkComment(std::string &str, const size_t &found)
+{
+	std::string::reverse_iterator rit = str.rend() - found;
+	while (rit != str.rend() && isspace(*rit))
+		++rit;
+	if (*rit == '#')
+		return false;
+	return true;
+}
 // size_t	Config::checkEnd(std::string::iterator &it)
 // {
 // 	std::string::iterator ite = _file.end();
