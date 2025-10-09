@@ -26,6 +26,7 @@ void	serverCore::resetDiscussion(int fd)
 	discussions[fd].body.clear();
 	discussions[fd].headerComplete = false;
 	discussions[fd].requestComplete = false;
+	discussions[fd].sendingResponse = false;
 	// discussions[fd].request.clear()
 }
 
@@ -231,61 +232,60 @@ int	serverCore::receiveRequest(int fd)
 	return 0;
 }
 
-void	serverCore::sendResponse(int client_fd, const std::string &header, const std::vector<char> &body)
+void	serverCore::sendResponse(int client_fd) //, std::string* response) //, const std::vector<char> &body)
 {
-	// ssize_t	remaining = discussions[client_fd].size;
-	// ssize_t sent = send(client_fd, discussions[client_fd].body.c_str(), discussions[client_fd].size, 0); // do we need flags ???
-	// if (sent < 0)
+	ssize_t	remaining = discussions[client_fd].size;
+	ssize_t sent = send(client_fd, discussions[client_fd].body.c_str(), discussions[client_fd].size, 0); // do we need flags ???
+	if (sent < 0)
+	{
+		std::cerr << BOLD RED "Error: failed to send data to client "  RESET << client_fd << std::endl;
+		removeClient(client_fd);
+		return;
+	}
+	else if (sent == remaining)
+	{
+		std::cout << BOLD GREEN "Success: All data sent to client (" << sent << ")"  RESET << client_fd << std::endl;
+		resetDiscussion(client_fd) ; // clear data
+		// changeSocketState(client_fd, EPOLLIN);
+		removeClient(client_fd); // temporary : if we sent answer we kill the client after for cleanup
+	}
+	else 
+	{
+		std::cout << BOLD CYAN "Success: " << sent << "/" << discussions[client_fd].size << "B sent to client "  RESET << client_fd << std::endl;
+		discussions[client_fd].body.erase(0, sent);
+		discussions[client_fd].size -= sent;
+	}
+
+	// ssize_t sent;
+	// size_t total = 0;
+
+	// // Envoi du header (string)
+	// while (total < header.size())
 	// {
-	// 	std::cerr << BOLD RED "Error: failed to send data to client "  RESET << client_fd << std::endl;
-	// 	removeClient(client_fd);
-	// 	return;
+	// 	sent = send(client_fd, header.c_str() + total, header.size() - total, 0);
+	// 	if (sent <= 0)
+	// 	{
+	// 		perror("send header");
+	// 		close(client_fd);
+	// 		return;
+	// 	}
+	// 	total += sent;
 	// }
-	// else if (sent == remaining)
+	// // Envoi du body (vector<char>)
+	// total = 0;
+	// while (total < body.size())
 	// {
-	// 	std::cout << BOLD GREEN "Success: All data sent to client "  RESET << client_fd << std::endl;
-	// 	resetDiscussion(client_fd) ; // clear data
-	// 	// changeSocketState(client_fd, EPOLLIN);
-	// 	removeClient(client_fd); // temporary : if we sent answer we kill the client after for cleanup
-	// }
-	// else 
-	// {
-	// 	std::cout << BOLD CYAN "Success: " << sent << " bytes sent to client "  RESET << client_fd << std::endl;
-	// 	discussions[client_fd].body.erase(0, sent);
-	// 	discussions[client_fd].size -= sent;
+	// 	sent = send(client_fd, body.data() + total, body.size() - total, 0);
+	// 	if (sent <= 0)
+	// 	{
+	// 		perror("send body");
+	// 		close(client_fd);
+	// 		return;
+	// 	}
+	// 	total += sent;
 	// }
 
 	// close(client_fd);
-	ssize_t sent;
-	size_t total = 0;
-
-	// Envoi du header (string)
-	while (total < header.size())
-	{
-		sent = send(client_fd, header.c_str() + total, header.size() - total, 0);
-		if (sent <= 0)
-		{
-			perror("send header");
-			close(client_fd);
-			return;
-		}
-		total += sent;
-	}
-	// Envoi du body (vector<char>)
-	total = 0;
-	while (total < body.size())
-	{
-		sent = send(client_fd, body.data() + total, body.size() - total, 0);
-		if (sent <= 0)
-		{
-			perror("send body");
-			close(client_fd);
-			return;
-		}
-		total += sent;
-	}
-
-	close(client_fd);
 }
 
 int	serverCore::getfd()

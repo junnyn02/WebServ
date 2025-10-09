@@ -69,14 +69,14 @@ int	main(int ac, char** av)
 			else if (events[i].events & EPOLLOUT)// Data received from an existing client
 			{
 				// serv.discussions[client].request.printRequest();
-				ResponseBuilder	response(serv.discussions[client].request);
-			
-				// std::string resp = response.sendResponse();
-				// serv.setResponse(client, resp, resp.length());
-				
-				// serv.sendResponse(client);
-
-				serv.sendResponse(client, response.getHeader(), response.getBody());
+				if (!serv.discussions[client].sendingResponse)
+				{
+					ResponseBuilder	response(serv.discussions[client].request);
+					std::string	resp = response.getHeader();
+					serv.setResponse(client, resp, resp.size());
+					serv.discussions[client].sendingResponse = true;
+				}
+				serv.sendResponse(client);
 			}
 		}
 	}
