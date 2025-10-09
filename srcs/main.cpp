@@ -22,12 +22,6 @@ int	main(int ac, char** av)
 		return (1);
 	}
 
-<<<<<<< HEAD
-	/*
-		NEED TO : manage signal so it destroys the server correctly on SIGINT
-	*/
-=======
->>>>>>> iris
 	// try
 	// {
 	// 	Config	conf(av[1]);
