@@ -260,7 +260,7 @@ const std::string   ResponseBuilder::build204(void)
     std::string response;
     response = "HTTP/1.1 " + getCode() + "\r\n";
     response.append("Server: webserv\nDate: " + getDate() + "\r\n");
-    std::cout << "[RESPONSE] : " << response << std::endl;
+    // std::cout << "[RESPONSE] : " << response << std::endl;
     return response;
 }
 

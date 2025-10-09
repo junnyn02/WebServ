@@ -7,18 +7,32 @@ serverCore::serverCore() : port(8080), error_num(0), client_max_body_size(0)
 serverCore::~serverCore() 
 {
 	close(serverSocket);
-	
 
 	std::map<int, clientData>::iterator it;
 	for (it = discussions.begin(); it != discussions.end(); it++)
 		close(it->first);
 	close (epoll_fd);
+	discussions.clear();
 }
 
 void	serverCore::serverError(std::string str)
 {
-	std::cerr << "Error: " << str << std::endl;
+	std::cerr << "Internal Server Error: " << str << std::endl;
 	std::exit(EXIT_FAILURE);
+}
+
+void	serverCore::resetDiscussion(int fd)
+{
+	discussions[fd].body.clear();
+	discussions[fd].headerComplete = false;
+	discussions[fd].requestComplete = false;
+	// discussions[fd].request.clear()
+}
+
+void	serverCore::removeClient(int fd)
+{
+	close(fd); // This automatically removes it from epoll
+	discussions.erase(fd);
 }
 
 void	serverCore::setBaseSocket() // LOOK UP HOW TO LISTEN TO MUTLIPLE PORTS
@@ -63,6 +77,16 @@ void	serverCore::createEpoll()
 
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, serverSocket, &event) == -1) 
 		serverError("epoll_ctl: serverSocket");
+}
+
+void serverCore::changeSocketState(int client_fd, int mode) 
+{
+	struct epoll_event ev;
+	ev.data.fd = client_fd;
+	ev.events = mode;
+
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client_fd, &ev) == -1) 
+		std::cerr << "Error: could not mark fd " << client_fd << " as " << (mode == EPOLLIN ? "EPOLLIN\n" : "EPOLLOUT\n");
 }
 
 void	serverCore::startServer() 
@@ -115,7 +139,7 @@ void	serverCore::acceptNewClients()
 				return;
 			else 
 			{
-				std::cerr << "Error: accept on server socket" << std::endl;
+				std::cerr << "Internal Server Error: accept on server socket" << std::endl;
 				return;
 			}
 		}
@@ -123,9 +147,8 @@ void	serverCore::acceptNewClients()
 		// Set the new client socket to non-blocking
 		setNonBlocking(client_fd);
 
-		// REMOVE EPOLLET ??? GET LT . read into fd bit by bit loop by loop until done (true non blocking)
 		// Add the new client socket to the epoll interest list
-		event.events = EPOLLIN; // | EPOLLET; // Monitor for read events, edge-triggered (ET) (instead of Level-Triggered (LT) . single signal or repeating signals)
+		event.events = EPOLLIN;
 		event.data.fd = client_fd;
 		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &event) == -1) 
 		{
@@ -139,7 +162,6 @@ void	serverCore::acceptNewClients()
 		data.headerComplete = false;
 		
 		discussions[client_fd] = data;
-		std::cout << "Client " << client_fd << " discussion created" << std::endl;
 	}
 }
 
@@ -162,7 +184,9 @@ int	serverCore::receiveRequest(int fd)
 			discussions[fd].request.fillRequest(discussions[fd].body, discussions[fd].size);
 			if (discussions[fd].request.getSize() == 0)
 			{
+				std::cout << "Request Complete : No body\n";
 				discussions[fd].requestComplete = true;
+				changeSocketState(fd, EPOLLOUT);
 				return 1;
 			}
 			return 0;
@@ -170,11 +194,13 @@ int	serverCore::receiveRequest(int fd)
 		if (discussions[fd].headerComplete)
 		{
 			int start = discussions[fd].body.find("\r\n\r\n") + 4;
-			if (discussions[fd].size - start == discussions[fd].request.getSize()) // Request complete
+			if (discussions[fd].size - start == discussions[fd].request.getSize()) 
 			{
 				std::string body = discussions[fd].request.parseBody(discussions[fd].body);
 				discussions[fd].request.setBody(body);
 				discussions[fd].requestComplete = true;
+				std::cout << "Request Complete : With body\n";
+				changeSocketState(fd, EPOLLOUT);
 				//discussions[fd].request.printRequest();
 				return 1;
 			}
@@ -182,61 +208,84 @@ int	serverCore::receiveRequest(int fd)
 				return 0;
 		}
 	}
-
-	if (valread == 0) // Client closed the connection
+	else if (valread == 0) // Client closed the connection
 	{
-		if (discussions[fd].requestComplete)
+		std::cout << "Client " << fd << " disconnected" << std::endl;
+		if (!discussions[fd].requestComplete)
 		{
 			discussions[fd].request.setStatus(400);
+			changeSocketState(fd, EPOLLOUT);
 			return (1);
 		}
-		std::cout << "Client " << fd << " disconnected" << std::endl;
-		close(fd); // This automatically removes it from epoll
+		removeClient(fd);
 		return -1;
 	}
 	else // internal server error ig
 	{
-		std::cerr << "Error: recv" << std::endl;
-		close(fd);
+		std::cerr << "Internal Server Error: recv" << std::endl;
+		removeClient(fd);
 		return -1;
 	}
 
-	
+	std::cerr << "NOT POSSIBLE : SEEK HELP FROM PRIEST IF YOU SEE THIS ERROR\n";
 	return 0;
 }
 
-void serverCore::sendResponse(int client_fd, const std::string &header, const std::vector<char> &body)
+void	serverCore::sendResponse(int client_fd, const std::string &header, const std::vector<char> &body)
 {
-    ssize_t sent;
-    size_t total = 0;
+	// ssize_t	remaining = discussions[client_fd].size;
+	// ssize_t sent = send(client_fd, discussions[client_fd].body.c_str(), discussions[client_fd].size, 0); // do we need flags ???
+	// if (sent < 0)
+	// {
+	// 	std::cerr << BOLD RED "Error: failed to send data to client "  RESET << client_fd << std::endl;
+	// 	removeClient(client_fd);
+	// 	return;
+	// }
+	// else if (sent == remaining)
+	// {
+	// 	std::cout << BOLD GREEN "Success: All data sent to client "  RESET << client_fd << std::endl;
+	// 	resetDiscussion(client_fd) ; // clear data
+	// 	// changeSocketState(client_fd, EPOLLIN);
+	// 	removeClient(client_fd); // temporary : if we sent answer we kill the client after for cleanup
+	// }
+	// else 
+	// {
+	// 	std::cout << BOLD CYAN "Success: " << sent << " bytes sent to client "  RESET << client_fd << std::endl;
+	// 	discussions[client_fd].body.erase(0, sent);
+	// 	discussions[client_fd].size -= sent;
+	// }
 
-    // Envoi du header (string)
-    while (total < header.size())
-    {
-        sent = send(client_fd, header.c_str() + total, header.size() - total, 0);
-        if (sent <= 0)
-        {
-            perror("send header");
-            close(client_fd);
-            return;
-        }
-        total += sent;
-    }
-    // Envoi du body (vector<char>)
-    total = 0;
-    while (total < body.size())
-    {
-        sent = send(client_fd, body.data() + total, body.size() - total, 0);
-        if (sent <= 0)
-        {
-            perror("send body");
-            close(client_fd);
-            return;
-        }
-        total += sent;
-    }
+	// close(client_fd);
+	ssize_t sent;
+	size_t total = 0;
 
-    close(client_fd);
+	// Envoi du header (string)
+	while (total < header.size())
+	{
+		sent = send(client_fd, header.c_str() + total, header.size() - total, 0);
+		if (sent <= 0)
+		{
+			perror("send header");
+			close(client_fd);
+			return;
+		}
+		total += sent;
+	}
+	// Envoi du body (vector<char>)
+	total = 0;
+	while (total < body.size())
+	{
+		sent = send(client_fd, body.data() + total, body.size() - total, 0);
+		if (sent <= 0)
+		{
+			perror("send body");
+			close(client_fd);
+			return;
+		}
+		total += sent;
+	}
+
+	close(client_fd);
 }
 
 int	serverCore::getfd()
