@@ -84,7 +84,7 @@ void Request::printRequest()
 		it++;
 	}
 	std::cout << std::endl;
-	std::cout << BOLDRED << "Body:\n" << RESET << getBody() << std::endl;
+	//std::cout << BOLDRED << "Body:\n" << RESET << getBody() << std::endl;
 }
 
 std::string Request::parseBody(const std::string& raw)

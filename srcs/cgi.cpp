@@ -1,6 +1,25 @@
-#include "Request.hpp"
+#include "cgi.hpp"
 
-
+void execCGI(const Request& request)
+{
+	std::vector<std::string> env;
+	env.push_back("REQUEST_METHOD=");
+	env.push_back("SCRIPT_NAME=");
+	env.push_back("GATEWAY_INTERFACE=CGI/1.1");
+	env.push_back("REMOTE_ADDR=");
+	env.push_back("SERVER_NAME=");
+	env.push_back("SERVER_PORT=8080");
+	env.push_back("SERVER_PROTOCOL=HTTP/1.1");
+	env.push_back("SERVER_SOFTWARE=Webserv/1.0");
+	if (request.getMethod() == "POST")		//idk
+	{
+		env.push_back("CONTENT_LENGTH=" + request.getSize());	//opt
+		env.push_back("CONTENT_TYPE=" + request.getType());		//opt
+	}
+	env.push_back("QUERY_STRING=");		//opt
+	env.push_back("PATH_INFO=");		//opt
+	env.push_back("PATH_TRANSLATED=");	//opt
+}
 
 /*
 PI cgi
