@@ -27,7 +27,7 @@ OBJS 		:=	$(addprefix $(OBJ_PATH), $(OBJ))
 INCLUDE		:=	-I $(INC_PATH)
 
 all:	$(NAME)
-	@mkdir -p $(UPLOAD_PATH)/upload
+	@mkdir -p $(UPLOAD_PATH)upload
 
 $(OBJ_PATH)%.o: $(SRC_PATH)%.cpp
 	@mkdir -p $(OBJ_PATH)
@@ -44,7 +44,7 @@ clean:
 
 fclean: clean
 	rm -f $(NAME)
-	rm -rf $(UPLOAD_PATH)/upload
+	rm -rf $(UPLOAD_PATH)upload
 
 re: fclean all
 
