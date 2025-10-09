@@ -66,7 +66,8 @@ private:
 	void		removeClient(int);
 
 	int			receiveRequest(int);
-	void		sendResponse(int); //, const std::string &,const std::vector<char> &);
+	// void		sendResponse(int);
+	void		sendResponse(int, const std::string &,const std::vector<char> &);
 	// clientData	receiveRequest(int fd);
 	// void		sendResponse(clientData);
 

@@ -15,6 +15,8 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <netinet/in.h>
+#include <iterator>
+#include <vector>
 
 std::string size_t_to_string(size_t n);
 

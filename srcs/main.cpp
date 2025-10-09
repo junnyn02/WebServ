@@ -1,5 +1,6 @@
 #include "serverCore.hpp"
 #include "Request.hpp"
+#include "Config.hpp"
 #include "ResponseBuilder.hpp"
 
 // Signal handler function
@@ -20,6 +21,17 @@ int	main(int ac, char** av)
 		std::cerr << "" << std::endl;
 		return (1);
 	}
+
+	// try
+	// {
+	// 	Config	conf(av[1]);
+	// }
+	// catch(const std::exception& e)
+	// {
+	// 	std::cerr << e.what() << '\n';
+	// 	return (1);
+	// }
+	
 
 	serverCore serv;
 	ac == 1 ? serv.startServer() : serv.startServer(av[1]); // should add argv[1] : config file (-> parsing)
@@ -59,10 +71,12 @@ int	main(int ac, char** av)
 				// serv.discussions[client].request.printRequest();
 				ResponseBuilder	response(serv.discussions[client].request);
 			
-				std::string resp = response.sendResponse();
-				serv.setResponse(client, resp, resp.length());
+				// std::string resp = response.sendResponse();
+				// serv.setResponse(client, resp, resp.length());
 				
-				serv.sendResponse(client);
+				// serv.sendResponse(client);
+
+				serv.sendResponse(client, response.getHeader(), response.getBody());
 			}
 		}
 	}
