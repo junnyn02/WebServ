@@ -237,18 +237,20 @@ void	serverCore::sendResponse(int client_fd) //, const std::string &header, cons
 	ssize_t sent = send(client_fd, discussions[client_fd].body.c_str(), discussions[client_fd].size, 0); // do we need flags ???
 	if (sent < 0)
 	{
-		std::cerr << "Error: failed to send data to client " << client_fd << std::endl;
+		std::cerr << BOLD RED "Error: failed to send data to client "  RESET << client_fd << std::endl;
 		removeClient(client_fd);
 		return;
 	}
 	else if (sent == remaining)
 	{
+		std::cout << BOLD GREEN "Success: All data sent to client "  RESET << client_fd << std::endl;
 		resetDiscussion(client_fd) ; // clear data
 		// changeSocketState(client_fd, EPOLLIN);
 		removeClient(client_fd); // temporary : if we sent answer we kill the client after for cleanup
 	}
 	else 
 	{
+		std::cout << BOLD CYAN "Success: " << sent << " bytes sent to client "  RESET << client_fd << std::endl;
 		discussions[client_fd].body.erase(0, sent);
 		discussions[client_fd].size -= sent;
 	}
