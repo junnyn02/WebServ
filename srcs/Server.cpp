@@ -12,6 +12,13 @@ void	Server::parseInfo(const std::string &context)
 		throw(std::runtime_error("Port not mapped"));
 	std::string::const_iterator it = context.begin() + found + strlen("listen");
 	findPort(it);
+	found = _context.find("root");
+	// if (found == std::string::npos || !checkComment(_context, found))
+		// throw(std::runtime_error("Port not mapped"));
+	it = context.begin() + found + strlen("root");
+	findArgs(it, "root");
+	it = context.begin() + found + strlen("server_name");
+	findArgs(it, "server_name");
 }
 
 void	Server::findPort(std::string::const_iterator &it)
@@ -29,4 +36,15 @@ void	Server::findPort(std::string::const_iterator &it)
 		throw (std::runtime_error("Impossible port"));
 	_port = i;
 	std::cout << _port << std::endl;
+}
+
+void	Server::findArgs(std::string::const_iterator &it, const std::string &key)
+{
+	while (it != _context.end() && isspace(*it))
+		++it;
+	std::string::const_iterator ite = it;
+	while (ite != _context.end() && *ite != ';')
+		++ite;
+	std::string	arg(it, ite);
+	_parsed.insert(std::pair<std::string, std::string>(key, arg));
 }

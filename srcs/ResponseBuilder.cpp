@@ -15,8 +15,8 @@ ResponseBuilder::ResponseBuilder(const Request &request) : _request(request)
     _mime.insert(std::pair<std::string, std::string>(".gif", "image/gif"));
     _mime.insert(std::pair<std::string, std::string>(".txt", "text/plain"));
     sendResponse();
-    std::cout << "[BODY SIZE]: " << _body.size() << std::endl;
-    std::cout << "[CONTENT BODY]:\n" << _body.data() << std::endl; 
+    // std::cout << "[BODY SIZE]: " << _body.size() << std::endl;
+    // std::cout << "[CONTENT BODY]:\n" << _body.data() << std::endl; 
 }
 
 ResponseBuilder::~ResponseBuilder()
@@ -57,8 +57,8 @@ void    ResponseBuilder::sendResponse(void)
     _header.append("Content-Length: " + size_t_to_string(_body.size()) + "\r\n");
     if (_code == "201 Created")
         _header.append("Location: /uploads/" + _request.getURI() + "\r\n"); //URI = filename ?
-    _header.append("\r\n");
-    // response.append("\r\n" + _body);
+    // _header.append("\r\n");
+    _header.append("\r\n" + _body);
     // std::cout << "RESPONSE =" << std::endl << response << std::endl;
     // return response;
 }
@@ -93,8 +93,8 @@ void    ResponseBuilder::buildListUploads(void)
             oss << ",";
     }
     oss << "]";
-    std::string str = oss.str();
-    _body = std::vector<char>(str.begin(), str.end());
+    _body = oss.str();
+    // _body = std::vector<char>(str.begin(), str.end());
     _code = "200 OK";
     _type = "application/json";
     // std::cout << "[LIST UPLOADS]" << _body << " | [CODE]: " << _code << " | [TYPE]: " << _type << std::endl;
@@ -231,16 +231,16 @@ void    ResponseBuilder::tryPost(void)
     if (!checkMime())
     {
         _code = "415 Unsupported Media Type";
-        msg = "<html><body><h1>415 - Unsupported Media Type</h1></body></html>";
-        _body = std::vector<char>(msg.begin(), msg.end());
+        // msg = "<html><body><h1>415 - Unsupported Media Type</h1></body></html>";
+        _body = "<html><body><h1>415 - Unsupported Media Type</h1></body></html>";
         _type = "text/html";
     }
     else if (_request.getSize() > 30000000)
     {
         std::cerr << "[SIZE TOO LARGE]" << std::endl;
         _code = "413 Payload Too Large";
-        msg = "<html><body><h1>413 - Payload Too Large</h1></body></html>";
-        _body = std::vector<char>(msg.begin(), msg.end());
+        // msg = "<html><body><h1>413 - Payload Too Large</h1></body></html>";
+        _body = "<html><body><h1>413 - Payload Too Large</h1></body></html>";
         _type = "text/html";
     }
     else
@@ -250,8 +250,8 @@ void    ResponseBuilder::tryPost(void)
         std::cout << "[FILE CREATED]" << std::endl;
         _code = "201 Created";
         _type = "application/json";
-        msg = "{\"status\":\"success\",\"message\":\"Image uploaded\",\"url\":\"/upload/" + _filename + "\"}"; //change w/ name of file
-        _body = std::vector<char>(msg.begin(), msg.end());
+        // msg = "{\"status\":\"success\",\"message\":\"Image uploaded\",\"url\":\"/upload/" + _filename + "\"}"; //change w/ name of file
+        _body = "{\"status\":\"success\",\"message\":\"Image uploaded\",\"url\":\"/upload/" + _filename + "\"}";
     }
 }
 
@@ -309,37 +309,39 @@ const std::string   ResponseBuilder::getType(void) const
     return ("application/octet-stream");
 }
 
-const std::vector<char>   ResponseBuilder::setBody(void) const
+const std::string   ResponseBuilder::setBody(void) const
 {
     if (_code == "404 Not Found")
     {
-        std::string error = "<html><body><h1>404 - Page Not Found</h1></body></html>";
-        return (std::vector<char>(error.begin(), error.end()));
+        // std::string error = "<html><body><h1>404 - Page Not Found</h1></body></html>";
+        return ("<html><body><h1>404 - Page Not Found</h1></body></html>");
     }
     if (_code == "403 Forbidden")
     {
-        std::string error = "<html><body><h1>403 - Fordbidden</h1></body></html>";
-        return (std::vector<char>(error.begin(), error.end()));
+        // std::string error = "<html><body><h1>403 - Fordbidden</h1></body></html>";
+        return ("<html><body><h1>403 - Fordbidden</h1></body></html>");
     }
     std::size_t found = _type.find("image");
     if (found == std::string::npos)
     {
         std::ifstream       infile(_request.getURI().c_str()); //gerer si image pas trouve ?
         std::vector<char>   body((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
+        std::string str(body.begin(), body.end());
         infile.close();
-        return (body);
+        return (str);
     }
     std::string media;
     std::ifstream   infile(_request.getURI().c_str(), std::ios::binary);
     std::vector<char>   body((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
+    std::string str(body.begin(), body.end());
     infile.close();
-    return (body);
+    return (str);
 }
 
-const std::vector<char> ResponseBuilder::getBody(void) const
-{
-    return (this->_body);
-}
+// const std::vector<char> ResponseBuilder::getBody(void) const
+// {
+//     return (this->_body);
+// }
 
 const std::string   ResponseBuilder::getHeader(void) const
 {

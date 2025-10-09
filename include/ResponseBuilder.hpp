@@ -12,7 +12,7 @@ class ResponseBuilder
         std::map<std::string, std::string>  _mime;
         std::vector<std::string>            _gallery;
         std::string                         _type;
-        std::vector<char>                   _body;
+        std::string                         _body;
         std::string                         _filename;
         std::string                         _header;
 
@@ -38,7 +38,6 @@ class ResponseBuilder
         const std::string       getType(void) const;
         const std::string       getDir(void) const;
         const std::string       getHeader(void) const;
-
-        const std::vector<char> getBody(void) const;
-        const std::vector<char> setBody(void) const;
+        const std::string       getBody(void) const;
+        const std::string       setBody(void) const;
 };

@@ -15,7 +15,8 @@ class Server
 		~Server(void) {};
 
 		void	parseInfo(const std::string &);
-		void	findPort(std::string::const_iterator &iterator);
+		void	findPort(std::string::const_iterator &);
+		void	findArgs(std::string::const_iterator &, const std::string &);
 };
 
 bool	checkComment(std::string &str, const size_t &found);
