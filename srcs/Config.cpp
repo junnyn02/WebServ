@@ -13,6 +13,8 @@ Config::Config(const std::string &filename)
 	findHTTP();
 	// std::cout << _context << std::endl;
 	findServer();
+	findBodySize();
+	std::cout << _body_size << std::endl;
 }
 
 void Config::findHTTP(void)
@@ -38,7 +40,7 @@ void	Config::findServer(void)
 		if (found != std::string::npos && checkComment(_context, found))
 		{
 			std::string::iterator it = _context.begin() + found + strlen("server");
-			while (isspace(*it))
+			while (it != _context.end() && isspace(*it))
 				++it;
 			if (*it == '{')
 			{
@@ -46,12 +48,6 @@ void	Config::findServer(void)
 				Server server(parsed);
 				_server.push_back(server);
 			}
-			// if (*it != '{')
-			// 	// continue;
-			// 	throw (std::runtime_error("Syntax serv(bracket) Error"));
-			// std::string parsed(it, checkEnd(it));
-			// Server server(parsed);
-			// _server.push_back(server);
 		}
 		if (found == std::string::npos)
 			break ;
@@ -59,6 +55,29 @@ void	Config::findServer(void)
 	}
 	if (_server.size() == 0)
 		throw(std::runtime_error("No Server Context found"));
+}
+
+
+//si c'est dans bloc server ? a gerer ou non ?
+void	Config::findBodySize(void)
+{
+	size_t	found = _context.find("client_max_body_size");
+	if (found == std::string::npos || !checkComment(_context, found))
+	{
+		_body_size = 1;
+		return ;
+	}
+	std::string::iterator it = _context.begin() + found + strlen("client_max_body_size");
+	while (isspace(*it))
+		++it;
+	std::string::iterator ite = it;
+	while (ite != _context.end() && isdigit(*ite))
+		++ite;
+	std::string parsed(it, ite);
+	double d = strtod(parsed.c_str(), NULL);
+	if (d > std::numeric_limits<int>::max() || d <= 0)
+		throw (std::runtime_error("Client Max Body Size Error"));
+	_body_size = (int)d;
 }
 
 std::string::iterator	Config::checkEnd(std::string::iterator &it)
@@ -94,25 +113,3 @@ bool	checkComment(std::string &str, const size_t &found)
 		return false;
 	return true;
 }
-// size_t	Config::checkEnd(std::string::iterator &it)
-// {
-// 	std::string::iterator ite = _file.end();
-// 	std::string::iterator tmp = it;
-// 	int	count = 0;
-
-// 	while (tmp != ite)
-// 	{
-// 		if (*tmp == '{')
-// 			count += 1;
-// 		++tmp;
-// 	}
-// 	tmp = it;
-// 	while (tmp != ite)
-// 	{
-// 		if (*tmp == '}')
-// 			count -= 1;
-// 		++tmp;
-// 	}
-// 	if (count != 0)
-// 		throw(std::runtime_error("Syntax (bracket) Error"));
-// }

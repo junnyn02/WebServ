@@ -19,7 +19,7 @@ class ResponseBuilder
     public:
         ResponseBuilder(const Request &);
         ~ResponseBuilder(void);
-        
+    
         void                    tryGet(void);
         void                    buildListUploads(void);
         void                    tryPost(void);

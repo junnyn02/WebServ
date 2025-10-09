@@ -17,6 +17,7 @@
 #include <netinet/in.h>
 #include <iterator>
 #include <vector>
+#include <limits>
 
 std::string size_t_to_string(size_t n);
 

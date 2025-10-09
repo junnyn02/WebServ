@@ -22,15 +22,16 @@ int	main(int ac, char** av)
 		return (1);
 	}
 
-	// try
-	// {
-	// 	Config	conf(av[1]);
-	// }
-	// catch(const std::exception& e)
-	// {
-	// 	std::cerr << e.what() << '\n';
-	// 	return (1);
-	// }
+	try
+	{
+		Config	conf(av[1]);
+		std::cout << BOLD GREEN"[PARSING DONE]" RESET << std::endl;
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+		return (1);
+	}
 	
 
 	serverCore serv;
@@ -76,7 +77,7 @@ int	main(int ac, char** av)
 				
 				// serv.sendResponse(client);
 
-				serv.sendResponse(client, response.getHeader(), response.getBody());
+				// serv.sendResponse(client, response.getHeader(), response.getBody());
 			}
 		}
 	}
