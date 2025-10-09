@@ -1,9 +1,11 @@
 #ifndef CGI_HPP
 #define CGI_HPP
 
+#include <unistd.h>
 #include "Request.hpp"
 
 void execCGI(const Request& request);
+void getEnv(const Request& request, std::vector<std::string>& env);
 
 /*
 - env (char** or map or char* vector)
