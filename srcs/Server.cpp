@@ -68,7 +68,7 @@ void	Server::findErrorPage(void)
 			while (ite != _context.end() && (isdigit(*ite) || isspace(*ite)))
 				++ite;
 			std::string key(it, ite);
-			// splitError(key);
+			// splitError(key, );
 			it = ite;
 			while (it != _context.end() && *it != ';')
 				++it;
@@ -81,7 +81,28 @@ void	Server::findErrorPage(void)
 	}
 }
 
-void	Server::splitError(const std::string &, const std::string &)
+void	Server::splitError(const std::string &key, const std::string &value)
 {
-	std::cout << "split error codes" << std::endl;
+	std::string::const_iterator it = key.begin();
+	while (it != key.end())
+	{
+		while (it != key.end() && isspace(*it) == 0)
+			++it;
+		if (it == key.end())
+			return ;
+		std::string::const_iterator ite = it;
+		while (ite != key.end() && isspace(*ite) != 0)
+			++ite;
+		std::string code(it, ite);
+		double d = strtod(code.c_str(), NULL);
+		if ((d == errno && d > std::numeric_limits<double>::max()) || d > std::numeric_limits<int>::max() || d < 0)
+			throw (std::runtime_error("Code error"));
+		_error_page.insert(std::pair<int, std::string>(d, value));
+		it = ite;
+	}
+}
+
+int	Server::getPort(void) const
+{
+	return (this->_port);
 }

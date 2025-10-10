@@ -24,6 +24,8 @@ class Config
 		void	findBodySize(void);
 
 		std::string::iterator	checkEnd(std::string::iterator &);
+
+		const std::vector<Server>	&getServer(void) const;
 };
 
 bool	checkComment(std::string &str, const size_t &found);

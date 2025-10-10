@@ -21,6 +21,8 @@ class Server
 		void	findArgs(const std::string &);
 		void	findErrorPage(void);
 		void	splitError(const std::string &, const std::string &);
+
+		int		getPort(void) const;
 };
 
 bool	checkComment(std::string &str, const size_t &found);

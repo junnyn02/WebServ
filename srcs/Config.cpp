@@ -113,3 +113,8 @@ bool	checkComment(std::string &str, const size_t &found)
 		return false;
 	return true;
 }
+
+const std::vector<Server>	&Config::getServer(void) const
+{
+	return (this->_server);
+}
