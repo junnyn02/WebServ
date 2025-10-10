@@ -26,6 +26,7 @@ void	serverCore::resetDiscussion(int fd)
 	discussions[fd].body.clear();
 	discussions[fd].headerComplete = false;
 	discussions[fd].requestComplete = false;
+	discussions[fd].sendingResponse = false;
 	// discussions[fd].request.clear()
 }
 
@@ -160,6 +161,7 @@ void	serverCore::acceptNewClients()
 		data.size = 0;
 		data.requestComplete = false;
 		data.headerComplete = false;
+		data.sendingResponse = false;
 		
 		discussions[client_fd] = data;
 	}
@@ -184,7 +186,6 @@ int	serverCore::receiveRequest(int fd)
 			discussions[fd].request.fillRequest(discussions[fd].body, discussions[fd].size);
 			if (discussions[fd].request.getSize() == 0)
 			{
-				std::cout << "Request Complete : No body\n";
 				discussions[fd].requestComplete = true;
 				changeSocketState(fd, EPOLLOUT);
 				return 1;
@@ -199,7 +200,6 @@ int	serverCore::receiveRequest(int fd)
 				std::string body = discussions[fd].request.parseBody(discussions[fd].body);
 				discussions[fd].request.setBody(body);
 				discussions[fd].requestComplete = true;
-				std::cout << "Request Complete : With body\n";
 				changeSocketState(fd, EPOLLOUT);
 				//discussions[fd].request.printRequest();
 				return 1;
@@ -231,61 +231,29 @@ int	serverCore::receiveRequest(int fd)
 	return 0;
 }
 
-void	serverCore::sendResponse(int client_fd, const std::string &header, const std::vector<char> &body)
+void	serverCore::sendResponse(int client_fd) //, std::string* response) //, const std::vector<char> &body)
 {
-	// ssize_t	remaining = discussions[client_fd].size;
-	// ssize_t sent = send(client_fd, discussions[client_fd].body.c_str(), discussions[client_fd].size, 0); // do we need flags ???
-	// if (sent < 0)
-	// {
-	// 	std::cerr << BOLD RED "Error: failed to send data to client "  RESET << client_fd << std::endl;
-	// 	removeClient(client_fd);
-	// 	return;
-	// }
-	// else if (sent == remaining)
-	// {
-	// 	std::cout << BOLD GREEN "Success: All data sent to client "  RESET << client_fd << std::endl;
-	// 	resetDiscussion(client_fd) ; // clear data
-	// 	// changeSocketState(client_fd, EPOLLIN);
-	// 	removeClient(client_fd); // temporary : if we sent answer we kill the client after for cleanup
-	// }
-	// else 
-	// {
-	// 	std::cout << BOLD CYAN "Success: " << sent << " bytes sent to client "  RESET << client_fd << std::endl;
-	// 	discussions[client_fd].body.erase(0, sent);
-	// 	discussions[client_fd].size -= sent;
-	// }
-
-	// close(client_fd);
-	ssize_t sent;
-	size_t total = 0;
-
-	// Envoi du header (string)
-	while (total < header.size())
+	ssize_t	remaining = discussions[client_fd].size;
+	ssize_t sent = send(client_fd, discussions[client_fd].body.c_str(), discussions[client_fd].size, 0); // do we need flags ???
+	if (sent < 0)
 	{
-		sent = send(client_fd, header.c_str() + total, header.size() - total, 0);
-		if (sent <= 0)
-		{
-			perror("send header");
-			close(client_fd);
-			return;
-		}
-		total += sent;
+		// std::cerr << BOLD RED "Error: failed to send data to client "  RESET << client_fd << std::endl;
+		removeClient(client_fd);
+		return;
 	}
-	// Envoi du body (vector<char>)
-	total = 0;
-	while (total < body.size())
+	else if (sent == remaining)
 	{
-		sent = send(client_fd, body.data() + total, body.size() - total, 0);
-		if (sent <= 0)
-		{
-			perror("send body");
-			close(client_fd);
-			return;
-		}
-		total += sent;
+		// std::cout << BOLD GREEN "Success: All data sent to client (" << sent << ")"  RESET << client_fd << std::endl;
+		resetDiscussion(client_fd) ; // clear data
+		// changeSocketState(client_fd, EPOLLIN);
+		removeClient(client_fd); // temporary : if we sent answer we kill the client after for cleanup
 	}
-
-	close(client_fd);
+	else 
+	{
+		// std::cout << BOLD CYAN "Success: " << sent << "/" << discussions[client_fd].size << "B sent to client "  RESET << client_fd << std::endl;
+		discussions[client_fd].body.erase(0, sent);
+		discussions[client_fd].size -= sent;
+	}
 }
 
 int	serverCore::getfd()

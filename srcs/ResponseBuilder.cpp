@@ -338,10 +338,10 @@ const std::string   ResponseBuilder::setBody(void) const
     return (str);
 }
 
-// const std::vector<char> ResponseBuilder::getBody(void) const
-// {
-//     return (this->_body);
-// }
+const std::string ResponseBuilder::getBody(void) const
+{
+    return (this->_body);
+}
 
 const std::string   ResponseBuilder::getHeader(void) const
 {
