@@ -26,6 +26,21 @@ Request::Request(const std::string& data, int data_size)
 	this->fillRequest(data, data_size);
 }
 
+Request::~Request() {}
+
+void Request::clearRequest()
+{
+	_method = "";
+	_uri = "";
+	_query = "";
+	_type = "";
+	_size = 0;
+	_name = "";
+	_body = "";
+	_status = 0;
+}
+
+
 const std::string& Request::getMethod() const
 {
 	return (_method);

@@ -30,6 +30,8 @@ class Request
 	public:
 		Request();
 		Request(const std::string&, int data_size);
+		~Request();
+		
 		void fillRequest(const std::string& data, int data_size);
 		int parseRequestLine(const std::string&);
 		std::string normalizeUri(const std::string& raw);
@@ -37,6 +39,7 @@ class Request
 		void lowerKeys(std::map<std::string, std::string>& headers);
 		std::string parseBody(const std::string&);
 		void printRequest();
+		void clearRequest();
 
 		const std::string& getMethod() const;
 		const std::string& getURI() const;

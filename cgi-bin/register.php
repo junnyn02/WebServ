@@ -1,8 +1,8 @@
 <?php
-$firstName = $_POST['first_name'] ?? '';
-$lastName  = $_POST['last_name'] ?? '';
-$login     = $_POST['login'] ?? '';
-$consent   = isset($_POST['consent']) ? "Yes" : "No"; //box only appears in POST if checked
+$firstName = $_GET['first_name'] ?? '';
+$lastName  = $_GET['last_name'] ?? '';
+$login     = $_GET['login'] ?? '';
+$consent   = isset($_GET['consent']) ? "Yes" : "No"; //box only appears in POST if checked
 // modify so no profile if consent is not given
 $firstName = htmlspecialchars($firstName, ENT_QUOTES, 'UTF-8');
 $lastName  = htmlspecialchars($lastName, ENT_QUOTES, 'UTF-8');

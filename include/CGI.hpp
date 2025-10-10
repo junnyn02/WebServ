@@ -2,6 +2,8 @@
 #define CGI_HPP
 
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "Request.hpp"
 
 void execCGI(const Request& request);
