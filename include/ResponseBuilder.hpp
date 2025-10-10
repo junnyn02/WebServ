@@ -14,27 +14,30 @@ class ResponseBuilder
         std::string                         _type;
         std::string                         _body;
         std::string                         _filename;
+        std::string                         _header;
 
     public:
         ResponseBuilder(const Request &);
         ~ResponseBuilder(void);
         
-        void                tryGet(void);
-        void                buildListUploads(void);
-        void                tryPost(void);
-        void                tryDelete(void);
-        void                isDir(const std::string &);
-        void                isFile(const std::string &);
+        void                    tryGet(void);
+        void                    buildListUploads(void);
+        void                    tryPost(void);
+        void                    tryDelete(void);
+        void                    isDir(const std::string &);
+        void                    isFile(const std::string &);
+        void                    sendResponse(void);
         
-        bool                checkMime(void);        
-        bool                createFile(void);
+        bool                    checkMime(void);        
+        bool                    createFile(void);
 
-        const std::string   sendResponse(void);
-        const std::string   build204(void);
+        const std::string       build204(void);
         
-        const std::string   getCode(void) const;
-        const std::string   getDate(void) const;
-        const std::string   getType(void) const;
-        const std::string   getBody(void) const;
-        const std::string   getDir(void) const;
+        const std::string       getCode(void) const;
+        const std::string       getDate(void) const;
+        const std::string       getType(void) const;
+        const std::string       getDir(void) const;
+        const std::string       getHeader(void) const;
+        const std::string       getBody(void) const;
+        const std::string       setBody(void) const;
 };

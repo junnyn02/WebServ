@@ -1,19 +1,38 @@
 #include "serverCore.hpp"
 #include "Request.hpp"
+#include "Config.hpp"
 #include "ResponseBuilder.hpp"
+
+// Signal handler function
+void signalHandler(int sig) {
+    std::cout << "Interrupt handle " << sig << std::endl;
+
+    exit(sig);
+}
 
 int	main(int ac, char** av)
 {
+	// Handle signal
+    signal(SIGINT, signalHandler);
+    signal(SIGPIPE, SIG_IGN);
+
 	if (ac > 2)
 	{
 		std::cerr << "" << std::endl;
 		return (1);
 	}
 
-	/*
-		NEED TO : manage signal so it destroys the server correctly on SIGINT
-	*/
+	// try
+	// {
+	// 	Config	conf(av[1]);
+	// }
+	// catch(const std::exception& e)
+	// {
+	// 	std::cerr << e.what() << '\n';
+	// 	return (1);
+	// }
 	
+
 	serverCore serv;
 	ac == 1 ? serv.startServer() : serv.startServer(av[1]); // should add argv[1] : config file (-> parsing)
 
@@ -31,37 +50,33 @@ int	main(int ac, char** av)
 
 		for (int i = 0; i < n_events; i++) 
 		{
+			int client = events[i].data.fd;
 			// Event handling logic
-			if (events[i].data.fd == serv.getfd()) // New client connection
+			if (client == serv.getfd()) // New client connection
 				serv.acceptNewClients();
-			else // Data received from an existing client
+			else if (events[i].events & EPOLLIN)// Data received from an existing client
 			{
-				int client = events[i].data.fd;
-				// clientData data = 
-				int status = serv.receiveRequest(client); 
-				
-				 if (status > 0)
-				{
-					// std::cout << "Trying to create Request clas for Client " << client << std::endl;
-					// std::cout << "Body : " << serv.discussions[client].body << std::endl;
-					// Request fresh(serv.discussions[client]);
-					serv.discussions[client].request.printRequest();
-																											//call CGI here? if else
-					ResponseBuilder	response(serv.discussions[client].request);
-
-					// fresh.printRequest(); // remove later
-				
-					// data.body = response.sendResponse();
-					// data.size = data.body.length();
-					std::string resp = response.sendResponse();
-					serv.setResponse(client, resp, resp.length());
-					std::cout << "[RECEIVE RESPONSE]" << std::endl;
-					
-					serv.sendResponse(client);
-				}
-				else if (status < 0)
-					serv.discussions.erase(client);
+				// int status = 
+				serv.receiveRequest(client); 
+	
+				// if (status < 0)
+				// {
+				// 	std::cerr << "Error : request not received\n";
+				// 	serv.discussions.erase(client);
+				// }
 				/* else status == 0 -> request incomplete still receiving */
+			}
+			else if (events[i].events & EPOLLOUT)// Data received from an existing client
+			{
+				// serv.discussions[client].request.printRequest();
+				if (!serv.discussions[client].sendingResponse)
+				{
+					ResponseBuilder	response(serv.discussions[client].request);
+					std::string	resp = response.getHeader();
+					serv.setResponse(client, resp, resp.size());
+					serv.discussions[client].sendingResponse = true;
+				}
+				serv.sendResponse(client);
 			}
 		}
 	}
