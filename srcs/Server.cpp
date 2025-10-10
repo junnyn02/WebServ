@@ -79,6 +79,8 @@ void	Server::findErrorPage(void)
 			break ;
 		found += strlen("error_page");
 	}
+	for (std::map<int, std::string>::iterator it = _error_page.begin(); it != _error_page.end(); ++it)
+		std::cout << it->first << " = " << it->second << std::endl;
 }
 
 void	Server::splitError(const std::string &key, const std::string &value)
@@ -86,12 +88,12 @@ void	Server::splitError(const std::string &key, const std::string &value)
 	std::string::const_iterator it = key.begin();
 	while (it != key.end())
 	{
-		while (it != key.end() && isspace(*it) == 0)
+		while (it != key.end() && isspace(*it))
 			++it;
 		if (it == key.end())
 			return ;
 		std::string::const_iterator ite = it;
-		while (ite != key.end() && isspace(*ite) != 0)
+		while (ite != key.end() && !isspace(*ite))
 			++ite;
 		std::string code(it, ite);
 		double d = strtod(code.c_str(), NULL);
