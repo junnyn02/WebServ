@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <title>Rate me</title>
+</head>
+<body>
+    <div class="block">
+        <h1>Rate my Portfolio</h1>
+
+        <form id="rateForm" action="/cgi-bin/register.php" method="get" class="form-container">
+            <div class="form-group">
+                <label for="rating">Give this portfolio a rating out of 5</label>
+                <div class="range-wrapper">
+                    <input id="rating" name="rating" type="range" min="0" max="5" value="3"
+                        required oninput="this.nextElementSibling.value = this.value">
+                    <output>3</output>
+                </div>
+            </div>
+            <div class="form-group radio-group">
+                <p>Would you hire me?</p>
+                <div class="radio-options">
+                    <label><input type="radio" name="hire" value="yes" required> Yes</label>
+                    <label><input type="radio" name="hire" value="no"> No</label>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+
+        <a href="index.html" class="lien-perso">⬅ Back to Portfolio</a>
+
+        <div class="toggle-container">
+            <label class="switch">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label">Mode sombre</span>
+        </div>
+    </div>
+    <script src="darkmode.js"></script>
+</body>
+</html>

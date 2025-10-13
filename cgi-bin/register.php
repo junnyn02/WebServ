@@ -7,7 +7,6 @@ $consent   = isset($_GET['consent']) ? "Yes" : "No"; //box only appears in POST 
 $firstName = htmlspecialchars($firstName, ENT_QUOTES, 'UTF-8');
 $lastName  = htmlspecialchars($lastName, ENT_QUOTES, 'UTF-8');
 $login     = htmlspecialchars($login, ENT_QUOTES, 'UTF-8');
-$consent   = htmlspecialchars($consent, ENT_QUOTES, 'UTF-8');
 ?>
 <!DOCTYPE html>
 <html lang="fr">

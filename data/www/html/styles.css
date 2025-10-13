@@ -418,3 +418,91 @@ body.dark-mode .submit-btn {
 body.dark-mode .submit-btn:hover {
   background-color: #506070;
 }
+
+.range-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: #47596d;
+  cursor: pointer;
+}
+
+output {
+  font-weight: 500;
+  color: var(--text-color);
+  min-width: 24px;
+  text-align: center;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radio-group p {
+  margin: 0;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.radio-options {
+  display: flex;
+  gap: 20px;
+}
+
+.radio-options label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--secondary-text);
+  font-weight: 400;
+}
+
+input[type="radio"] {
+  accent-color: #47596d;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin: 40px auto;
+  max-width: 450px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--text-color);
+}
+
+.submit-btn {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: #47596d;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+  background-color: #324255;
+}
+
+body.dark-mode input[type="range"],
+body.dark-mode input[type="radio"] {
+  accent-color: #6a798b;
+}
