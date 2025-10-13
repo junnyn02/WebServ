@@ -73,7 +73,7 @@ void	serverCore::setSocket(Server& server, int server_sock)
 	if (bind(server_sock, (struct sockaddr*)&sock, sizeof(sockaddr_in)) < 0)
 	{
 		std::cerr << "Failed to bind to port " << server.getPort() << "." << std::endl;
-		std::cerr << strerror(errno) << std::endl; // TO REMOVE /!\ 
+		std::cerr << strerror(errno) << std::endl; // TO REMOVE /!\ TO REMOVE
 		throw InternalServerException();
 	}
 }
