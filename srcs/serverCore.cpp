@@ -184,9 +184,19 @@ int	serverCore::receiveRequest(int fd)
 		{
 			discussions[fd].headerComplete = true;
 			discussions[fd].request.fillRequest(discussions[fd].body, discussions[fd].size);
+
+			int start = discussions[fd].body.find("\r\n\r\n") + 4;
 			if (discussions[fd].request.getSize() == 0)
 			{
 				discussions[fd].requestComplete = true;
+				changeSocketState(fd, EPOLLOUT);
+				return 1;
+			}
+			else if (discussions[fd].size - start == discussions[fd].request.getSize())
+			{
+				discussions[fd].requestComplete = true;
+				std::string body = discussions[fd].request.parseBody(discussions[fd].body);
+				discussions[fd].request.setBody(body);
 				changeSocketState(fd, EPOLLOUT);
 				return 1;
 			}

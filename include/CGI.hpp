@@ -6,7 +6,7 @@
 #include <sys/wait.h>
 #include "Request.hpp"
 
-void execCGI(const Request& request);
+std::string execCGI(const Request& request);
 void getEnv(const Request& request, std::vector<std::string>& env);
 
 /*

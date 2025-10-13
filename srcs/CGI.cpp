@@ -52,7 +52,7 @@ void getEnv(const Request& request, std::vector<std::string>& env)
 	//HTTP_* headers?
 }
 
-void execCGI(const Request& request)						//define CGI timeout?
+std::string execCGI(const Request& request)						//define CGI timeout?
 {
 	pid_t cgi;
 	int input[2];											//child process input
@@ -61,13 +61,13 @@ void execCGI(const Request& request)						//define CGI timeout?
 	if (pipe(input) == -1|| pipe(output) == -1)
 	{
 		//set status to 500 or exit program?
-		return;
+		return "";
 	}
 	cgi = fork();
 	if (cgi == -1)
 	{
 		//set status to 500 or exit program?
-		return;
+		return "";
 	}
 	else if (cgi == 0)
 	{
@@ -112,7 +112,7 @@ void execCGI(const Request& request)						//define CGI timeout?
 		{
 			close(output[0]);
 			std::cerr << "CGI error\n";
-			return;
+			return "";
 		}
 		else
 		{
@@ -122,18 +122,23 @@ void execCGI(const Request& request)						//define CGI timeout?
 			if (bytes == 0)
 			{
 				std::cerr << "Nothing in buffer\n";
-				return;
+				return "";
 			}
 			if (bytes > 0)
 			{
 				std::ostringstream convert;
+				std::stringstream to_string;
+				std::string size;
+				to_string << bytes;
+				to_string >> size;
 				convert << buffer;
 				std::string response = 
-				"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " 
-				+ convert.str() + "\r\n\r\n" 
-				+ std::string(buffer);
+				"HTTP/1.1 200 OK\r\nContent-Length: " + size + "\r\n"
+				+ convert.str() + "\r\n\r\n";
 				std::cout << response << std::endl;
+				return response;
 			}
 		}
 	}
+	return "";
 }

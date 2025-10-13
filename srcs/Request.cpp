@@ -6,6 +6,7 @@ Request::Request()
 	_method = "";
 	_uri = "";
 	_query = "";
+	_cgi = false;
 	_type = "";
 	_size = 0;
 	_name = "";
@@ -18,6 +19,7 @@ Request::Request(const std::string& data, int data_size)
 	_method = "";
 	_uri = "";
 	_query = "";
+	_cgi = false;
 	_type = "";
 	_size = 0;
 	_name = "";
@@ -54,6 +56,11 @@ const std::string& Request::getURI() const
 const std::string& Request::getQuery() const
 {
 	return (_query);
+}
+
+bool Request::getCgi() const
+{
+	return (_cgi);
 }
 
 const std::string& Request::getType() const
@@ -102,9 +109,14 @@ void Request::printRequest()
 	//std::cout << BOLDRED << "Body:\n" << RESET << getBody() << std::endl;
 }
 
+std::string Request::parseImages(const std::string& idk)
+{
+	
+}
+
 std::string Request::parseBody(const std::string& raw)
 {
-	if (_type.find("multipart/form-data") == std::string::npos)
+	if (_type.find("multipart/form-data") == std::string::npos && _type != "application/x-www-form-urlencoded")
 	{
 		_status = 415;
 		std::cerr << _status << " Unsupported Media Type\n";
@@ -240,6 +252,8 @@ std::string Request::normalizeUri(const std::string& raw)
 		clean = raw.substr(21, raw.length() - 21);
 	else
 		clean = raw;
+	if (raw.find(".php") != std::string::npos)
+		_cgi = true;
 	if (clean.find("?") != std::string::npos)
 	{
 		size_t query = clean.find("?") + 1;

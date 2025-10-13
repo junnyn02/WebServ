@@ -2,6 +2,7 @@
 #include "Request.hpp"
 #include "Config.hpp"
 #include "ResponseBuilder.hpp"
+#include "CGI.hpp"
 
 // Signal handler function
 void signalHandler(int sig) {
@@ -71,11 +72,20 @@ int	main(int ac, char** av)
 				// serv.discussions[client].request.printRequest();
 				if (!serv.discussions[client].sendingResponse)
 				{
-					ResponseBuilder	response(serv.discussions[client].request);
-					std::string	resp = response.getHeader();
+					std::string resp;
+					if (serv.discussions[client].request.getCgi() == false)
+					{
+						ResponseBuilder	response(serv.discussions[client].request);
+						resp = response.getHeader();
+					}
+					else
+					{
+						resp = execCGI(serv.discussions[client].request);
+					}
 					serv.setResponse(client, resp, resp.size());
 					serv.discussions[client].sendingResponse = true;
 				}
+				//std::cout << "Reply\n"; triggered after ctrl+C or client disconnect?
 				serv.sendResponse(client);
 			}
 		}

@@ -21,6 +21,7 @@ class Request
 		std::string							_method;
 		std::string							_uri;
 		std::string							_query;
+		bool								_cgi;
 		std::string							_type; 		//content type
 		size_t								_size;		//content size
 		std::string							_name;		//filename
@@ -38,12 +39,14 @@ class Request
 		int parseHeaders(std::string&);
 		void lowerKeys(std::map<std::string, std::string>& headers);
 		std::string parseBody(const std::string&);
+		std::string Request::parseImages(const std::string& idk);
 		void printRequest();
 		void clearRequest();
 
 		const std::string& getMethod() const;
 		const std::string& getURI() const;
 		const std::string& getQuery() const;
+		bool					getCgi() const;
 		const std::string& getType() const;
 		const std::string& getName() const;
 		const std::string& getBody() const;
