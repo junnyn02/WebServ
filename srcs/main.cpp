@@ -1,6 +1,7 @@
 #include "serverCore.hpp"
 #include "Request.hpp"
 #include "Config.hpp"
+#include "Server.hpp"
 #include "ResponseBuilder.hpp"
 
 // Signal handler function
@@ -23,15 +24,15 @@ int	main(int ac, char** av)
 	}
 
 	try
-	{
-		Config	conf(av[1]);
-		std::cout << BOLD GREEN"[PARSING DONE]" RESET << std::endl;
-		std::vector<Server> servers = conf.getServer();
-		std::cout << BOLD GREEN"[CONFIG PORT]: " RESET << std::endl;
-		for (size_t i = 0; i < servers.size(); i++)
-			std::cout << "\t" << servers[i].getPort() << std::endl;
-		return (0);
-	}
+		{
+			Config	conf(av[1]);
+			std::cout << BOLD GREEN"[PARSING DONE]" RESET << std::endl;
+			std::vector<Server*> servers = conf.getServer();
+			std::cout << BOLD GREEN"[CONFIG PORT]: " RESET << std::endl;
+			for (size_t i = 0; i < servers.size(); i++)
+				std::cout << "\t" << servers[i]->getPort() << std::endl;
+			return (0);
+		}
 	catch(const std::exception& e)
 	{
 		std::cerr << e.what() << '\n';

@@ -1,31 +1,40 @@
 #pragma once
 
 #include "utils.hpp"
-#include "Server.hpp"
+// #include "Server.hpp"
 
 class Server;
 
 class Config
 {
-    private:
-		// std::string::iterator	_http_begin;
-		// std::string::iterator	_http_end;
-		int					_body_size;
-		std::string			_file;
-		std::string			_context;
-		std::vector<Server>	_server;
-
-    public:
-        Config(const std::string &);
-        ~Config(void){};
+	private:
+		std::vector<Server*>			_server;
 
 		void	findHTTP(void);
 		void	findServer(void);
-		void	findBodySize(void);
 
+    protected:
+		int							_body_size;
+		std::string					_file;
+		std::string					_context;
+		std::map<int, std::string>	_error_page;
+		Config(void) {};
+
+    public:
+        Config(const std::string &);
+        virtual ~Config(void);
+
+		void	findBodySize(std::string::iterator &);
+		void	findErrorPage(void);
+		void	splitError(const std::string &, const std::string &);
+
+		bool					checkComment(std::string &str, const size_t &found);
 		std::string::iterator	checkEnd(std::string::iterator &);
 
-		const std::vector<Server>	&getServer(void) const;
-};
+		void	findRule(void);
 
-bool	checkComment(std::string &str, const size_t &found);
+		const int					&getBodySize(void) const;
+		const std::vector<Server*>	&getServer(void) const;
+
+
+};
