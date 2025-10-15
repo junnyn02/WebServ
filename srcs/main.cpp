@@ -25,7 +25,9 @@ int	main(int ac, char** av)
 	}
 	try
 	{
-		Config	conf(av[1]);
+		std::string	config;
+		ac == 2 ? config = av[1] : config = "default.conf";
+		Config	conf(config);
 		std::cout << BOLD GREEN"[PARSING DONE]" RESET << std::endl;
 		std::vector<Config*> servers = conf.getServer();
 		serverCore serv(servers);
