@@ -57,7 +57,7 @@ std::string execCGI(const Request& request)						//define CGI timeout?
 	pid_t cgi;
 	int input[2];											//child process input
 	int output[2];											//child process output
-	
+
 	if (pipe(input) == -1|| pipe(output) == -1)
 	{
 		//set status to 500 or exit program?
@@ -107,7 +107,7 @@ std::string execCGI(const Request& request)						//define CGI timeout?
 		}
 		close(input[1]);
 		int status;
-		pid_t result = waitpid(cgi, &status, WNOHANG);		//check flag
+		pid_t result = waitpid(cgi, &status, WUNTRACED);		//might change flag later
 		if (result < 0)
 		{
 			close(output[0]);
