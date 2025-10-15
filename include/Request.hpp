@@ -5,7 +5,7 @@
 #define BOLDRED "\033[1m\033[31m"
 #define RESET "\033[0m"
 
-#include "Server.hpp"
+#include "Config.hpp"
 #include <iostream>
 #include <vector>
 #include <map>
@@ -49,7 +49,6 @@ class Request
 		void	setServer(Server*);
 		void	setURI(const std::string &);
 		void	setBody(const std::string& body);
-
 };
 
 std::string normalizeUri(const std::string&);
