@@ -41,5 +41,4 @@ class Config
 		const std::vector<Config*>			&getServer(void) const;
 		const std::map<int, std::string>	&getError(void) const;
 		const std::map<std::string, std::string>	&getInfo(void) const;
-		virtual int	getPort(void) const {return -1;};
 };

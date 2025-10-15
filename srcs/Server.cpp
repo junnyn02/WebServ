@@ -100,7 +100,7 @@ void	Server::findPort(std::string::iterator &it)
 	_port = (int)d;
 }
 
-int	Server::getPort(void) const
+const int	&Server::getPort(void) const
 {
 	return (this->_port);
 }

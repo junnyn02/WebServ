@@ -3,6 +3,7 @@
 #include "Config.hpp"
 #include "Server.hpp"
 #include "ResponseBuilder.hpp"
+#include "Location.hpp"
 
 // Signal handler function
 void signalHandler(int sig) {
@@ -29,8 +30,23 @@ int	main(int ac, char** av)
 			std::cout << BOLD GREEN"[PARSING DONE]" RESET << std::endl;
 			std::vector<Config*> servers = conf.getServer();
 			std::cout << BOLD GREEN"[CONFIG PORT]: " RESET << std::endl;
-			for (size_t i = 0; i < servers.size(); i++)
-				std::cout << "\t" << servers[i]->getPort() << std::endl;
+			size_t i = 0;
+			while (i < servers.size())
+			{
+				Server* srv = dynamic_cast<Server*>(servers[i]);
+				if (srv)  // Vérifier que le cast a réussi
+					std::cout << "\t" << srv->getPort() << std::endl;
+				std::vector<Config*> locat = servers[i]->getServer();
+				size_t j = 0;
+				while (j < locat.size())
+				{
+					Location* location = dynamic_cast<Location*>(locat[j]);
+					if (location)
+						std::cout << "\t" << location->getUri() << std::endl;
+					j++;
+				}
+				i++;
+			}
 			return (0);
 		}
 	catch(const std::exception& e)
