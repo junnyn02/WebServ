@@ -109,10 +109,10 @@ void Request::printRequest()
 	//std::cout << BOLDRED << "Body:\n" << RESET << getBody() << std::endl;
 }
 
-std::string Request::parseImages(const std::string& idk)
-{
+// std::string Request::parseImages(const std::string& idk)
+// {
 	
-}
+// }
 
 std::string Request::parseBody(const std::string& raw)
 {
