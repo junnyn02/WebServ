@@ -5,6 +5,7 @@
 #define BOLDRED "\033[1m\033[31m"
 #define RESET "\033[0m"
 
+#include "Server.hpp"
 #include <iostream>
 #include <vector>
 #include <map>
@@ -25,6 +26,8 @@ class Request
 		std::string							_body;
 		int									_status;
 		std::map<std::string, std::string>	_headers;
+		Server*								_server;
+
 	public:
 		Request();
 		Request(const std::string&, int data_size);
@@ -43,6 +46,7 @@ class Request
 		int getStatus() const;
 
 		void	setStatus(int);
+		void	setServer(Server*);
 		void	setURI(const std::string &);
 		void	setBody(const std::string& body);
 

@@ -13,7 +13,6 @@
 typedef struct clientData
 {
 	int			clientSocket;
-	int			serverSocket; // which server is the client comunicating with
 	int			size;
 	std::string	body;
 	// bool		requestChunked;

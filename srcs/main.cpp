@@ -8,7 +8,7 @@
 void signalHandler(int sig) 
 {
 	(void)sig;
-	throw(std::runtime_error("Server closed manually"));
+	throw (std::runtime_error("\nServer closed manually."));
 }
 
 int	main(int ac, char** av)

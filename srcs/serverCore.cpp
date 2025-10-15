@@ -195,11 +195,14 @@ void	serverCore::acceptNewClients(int server_fd)
 		}
 		clientData data;
 		data.clientSocket = client_fd;
-		data.serverSocket = server_fd;
 		data.size = 0;
 		data.requestComplete = false;
 		data.headerComplete = false;
 		data.sendingResponse = false;
+		std::map<int, Server*>::iterator it = _servers.find(server_fd);
+		if (it == _servers.end())
+			throw (std::runtime_error("\nServer cannot be found."));
+		data.request.setServer(it->second);
 		
 		_clients[client_fd] = data;
 	}
