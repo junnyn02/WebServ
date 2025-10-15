@@ -15,5 +15,5 @@ class Server : public Config
 		Server(const std::string &, const int &, const std::map<int, std::string> &, const std::map<std::string, std::string> &);
 		virtual ~Server(void) {};
 
-		const int	&getPort(void) const;
+		virtual int	getPort(void) const;
 };
