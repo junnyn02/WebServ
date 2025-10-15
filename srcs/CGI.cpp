@@ -57,7 +57,7 @@ std::string execCGI(const Request& request)						//define CGI timeout?
 	pid_t cgi;
 	int input[2];											//child process input
 	int output[2];											//child process output
-
+	
 	if (pipe(input) == -1|| pipe(output) == -1)
 	{
 		//set status to 500 or exit program?

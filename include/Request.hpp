@@ -39,7 +39,7 @@ class Request
 		int parseHeaders(std::string&);
 		void lowerKeys(std::map<std::string, std::string>& headers);
 		std::string parseBody(const std::string&);
-		std::string parseImages(const std::string& idk);
+		std::string parseForm(const std::string& idk);
 		void printRequest();
 		void clearRequest();
 

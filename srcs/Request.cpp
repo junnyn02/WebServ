@@ -35,6 +35,7 @@ void Request::clearRequest()
 	_method = "";
 	_uri = "";
 	_query = "";
+	_cgi = false;
 	_type = "";
 	_size = 0;
 	_name = "";
@@ -94,6 +95,7 @@ void Request::printRequest()
 	std::cout << "method : " << this->getMethod() << std::endl;
 	std::cout << "uri : " << this->getURI() << std::endl;
 	std::cout << "query : " << this->getQuery() << std::endl;
+	std::cout << "CGI : " << this->getCgi() << std::endl;
 	std::cout << "content type : " << this->getType() << std::endl;
 	std::cout << "content size : " << this->getSize() << std::endl;
 	std::cout << "file name : " << this->getName() << std::endl;
@@ -106,21 +108,32 @@ void Request::printRequest()
 		it++;
 	}
 	std::cout << std::endl;
-	//std::cout << BOLDRED << "Body:\n" << RESET << getBody() << std::endl;
+	std::cout << BOLDRED << "Body:\n" << RESET << getBody() << std::endl;
 }
 
-// std::string Request::parseImages(const std::string& idk)
-// {
-	
-// }
+std::string Request::parseForm(const std::string& raw)
+{
+	size_t empty = raw.find("\r\n\r\n") + 4;
+	std::string body = raw.substr(empty, _size - empty);
+	return body;
+}
 
 std::string Request::parseBody(const std::string& raw)
 {
-	if (_type.find("multipart/form-data") == std::string::npos && _type != "application/x-www-form-urlencoded")
+	std::string body = "";
+	if (_type.find("multipart/form-data") == std::string::npos)
 	{
-		_status = 415;
-		std::cerr << _status << " Unsupported Media Type\n";
-		return "";
+		if (_type == "application/x-www-form-urlencoded")
+		{
+			body = parseForm(raw);
+			return body;
+		}
+		else
+		{
+			_status = 415;
+			std::cerr << _status << " Unsupported Media Type\n";
+			return body;
+		}
 	}
 	size_t pos = _type.find("boundary=");
 	if (pos == std::string::npos)
@@ -177,7 +190,7 @@ std::string Request::parseBody(const std::string& raw)
 	end = raw.find("\r\n\r\n", pos);
 	end += 4;
 	end = raw.find("\r\n\r\n", end);
-	std::string body = raw.substr(end + 4, _size - header.length());
+	body = raw.substr(end + 4, _size - header.length());
 	_size -=header.length();
 	return body;
 }

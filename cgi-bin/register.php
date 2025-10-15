@@ -1,8 +1,8 @@
 <?php
-$firstName = $_GET['first_name'] ?? '';
-$lastName  = $_GET['last_name'] ?? '';
-$login     = $_GET['login'] ?? '';
-$consent   = isset($_GET['consent']) ? "Yes" : "No"; //box only appears in POST if checked
+$firstName = $_POST['first_name'] ?? '';
+$lastName  = $_POST['last_name'] ?? '';
+$login     = $_POST['login'] ?? '';
+$consent   = isset($_POST['consent']) ? "Yes" : "No"; //box only appears in POST if checked
 // modify so no profile if consent is not given
 $firstName = htmlspecialchars($firstName, ENT_QUOTES, 'UTF-8');
 $lastName  = htmlspecialchars($lastName, ENT_QUOTES, 'UTF-8');
@@ -13,7 +13,7 @@ $login     = htmlspecialchars($login, ENT_QUOTES, 'UTF-8');
 <head>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/styles.css">
     <title><?php echo $firstName . " " . $lastName; ?> – Profile</title>
 </head>
 <body>
@@ -36,6 +36,6 @@ $login     = htmlspecialchars($login, ENT_QUOTES, 'UTF-8');
         <span class="toggle-label">Mode sombre</span>
     </div>
 
-    <script src="darkmode.js"></script>
+    <script src="/darkmode.js"></script>
 </body>
 </html>

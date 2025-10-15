@@ -72,6 +72,7 @@ int	main(int ac, char** av)
 				// serv.discussions[client].request.printRequest();
 				if (!serv.discussions[client].sendingResponse)
 				{
+					serv.discussions[client].request.printRequest();
 					std::string resp;
 					if (serv.discussions[client].request.getCgi() == false)
 					{
