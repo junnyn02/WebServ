@@ -313,6 +313,11 @@ void	Request::setStatus(int status)
 	this->_status = status;
 }
 
+void	Request::setServer(Server* server)
+{
+	this->_server = server;
+}
+
 void	Request::setBody(const std::string& body)
 {
 	this->_body = body;

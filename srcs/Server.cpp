@@ -2,6 +2,7 @@
 
 Server::Server(const std::string &context, const int &body_size, const std::map<int, std::string> &error_page, const std::map<std::string, std::string> &parsed) : Config()
 {
+	std::cout << "[SERVER]" << std::endl;
 	this->_context = context;
 	this->_body_size = body_size;
 	// std::cout << CYAN "[INHERIT BODY SIZE]: " RESET << this->_body_size << std::endl;
@@ -52,7 +53,7 @@ void	Server::parseServer(void)
 			while (it != _context.end() && *it != '{' && *it != '\n')
 				++it;
 			if (it == _context.end() || *it != '{')
-				throw (std::runtime_error("Syntax (bracket) Error"));
+				throw (std::runtime_error("Syntax 10 (bracket) Error"));
 			it = checkEnd(it);
 		}
 		else

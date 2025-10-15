@@ -6,10 +6,10 @@
 #include "Location.hpp"
 
 // Signal handler function
-void signalHandler(int sig) {
-    std::cout << "Interrupt handle " << sig << std::endl;
-
-    exit(sig);
+void signalHandler(int sig) 
+{
+	(void)sig;
+	throw (std::runtime_error("\nServer closed manually."));
 }
 
 int	main(int ac, char** av)
@@ -20,88 +20,54 @@ int	main(int ac, char** av)
 
 	if (ac > 2)
 	{
-		std::cerr << "" << std::endl;
+		std::cerr << "Too many arguments./nFormat : ./webserv [config file](optional)]" << std::endl;
 		return (1);
 	}
-
 	try
+	{
+		Config	conf(av[1]);
+		std::cout << BOLD GREEN"[PARSING DONE]" RESET << std::endl;
+		std::vector<Config*> servers = conf.getServer();
+		serverCore serv(servers);
+		std::cout << BOLD GREEN"[SERVER STARTED SUCCESSFULLY]" RESET << std::endl;
+
+		struct epoll_event events[MAX_EVENTS];
+		while (1)
 		{
-			Config	conf(av[1]);
-			std::cout << BOLD GREEN"[PARSING DONE]" RESET << std::endl;
-			std::vector<Config*> servers = conf.getServer();
-			std::cout << BOLD GREEN"[CONFIG PORT]: " RESET << std::endl;
-			size_t i = 0;
-			while (i < servers.size())
+			int n_events = epoll_wait(serv._epoll_fd, events, MAX_EVENTS, 5000); // SET TIMEOUT (instead of -1)
+			if (n_events == -1)
+				throw serverCore::EpollErrorException();
+
+			for (int i = 0; i < n_events; i++) 
 			{
-				Server* srv = dynamic_cast<Server*>(servers[i]);
-				if (srv)  // Vérifier que le cast a réussi
-					std::cout << "\t" << srv->getPort() << std::endl;
-				std::vector<Config*> locat = servers[i]->getServer();
-				size_t j = 0;
-				while (j < locat.size())
+				int client = events[i].data.fd;
+				// Event handling logic
+				if (serv.findServer(client)) // client is one of the server's fd -> new connection
+					serv.acceptNewClients(client);
+				else if (events[i].events & EPOLLIN)// Data received from an existing client
+					serv.receiveRequest(client);
+				else if (events[i].events & EPOLLOUT)
 				{
-					Location* location = dynamic_cast<Location*>(locat[j]);
-					if (location)
-						std::cout << "\t" << location->getUri() << std::endl;
-					j++;
+					// serv._clients[client].request.printRequest();
+					if (!serv._clients[client].sendingResponse)
+					{
+						ResponseBuilder	response(serv._clients[client].request);
+						std::string	resp = response.getHeader();
+						serv.setResponse(client, resp, resp.size());
+						serv._clients[client].sendingResponse = true;
+					}
+					serv.sendResponse(client);
 				}
-				i++;
 			}
-			return (0);
 		}
+
+		return (0);
+	}
 	catch(const std::exception& e)
 	{
 		std::cerr << e.what() << '\n';
 		return (1);
 	}
-	
 
-	serverCore serv;
-	ac == 1 ? serv.startServer() : serv.startServer(av[1]); // should add argv[1] : config file (-> parsing)
-
-	struct epoll_event events[MAX_EVENTS];
-	// map with client fd / client data
-
-	while (1)
-	{
-		int n_events = epoll_wait(serv.epoll_fd, events, MAX_EVENTS, 5000); // SET TIMEOUT (instead of -1)
-		if (n_events == -1)
-		{
-			std::cerr << "Error: epoll_wait" << std::endl;
-			break;
-		}
-
-		for (int i = 0; i < n_events; i++) 
-		{
-			int client = events[i].data.fd;
-			// Event handling logic
-			if (client == serv.getfd()) // New client connection
-				serv.acceptNewClients();
-			else if (events[i].events & EPOLLIN)// Data received from an existing client
-			{
-				// int status = 
-				serv.receiveRequest(client); 
-	
-				// if (status < 0)
-				// {
-				// 	std::cerr << "Error : request not received\n";
-				// 	serv.discussions.erase(client);
-				// }
-				/* else status == 0 -> request incomplete still receiving */
-			}
-			else if (events[i].events & EPOLLOUT)// Data received from an existing client
-			{
-				// serv.discussions[client].request.printRequest();
-				if (!serv.discussions[client].sendingResponse)
-				{
-					ResponseBuilder	response(serv.discussions[client].request);
-					std::string	resp = response.getHeader();
-					serv.setResponse(client, resp, resp.size());
-					serv.discussions[client].sendingResponse = true;
-				}
-				serv.sendResponse(client);
-			}
-		}
-	}
 	return (0);
 }

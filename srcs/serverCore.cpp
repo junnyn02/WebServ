@@ -1,18 +1,63 @@
 #include "serverCore.hpp"
 
-serverCore::serverCore() : port(8080), error_num(0), client_max_body_size(0)
+const char*	serverCore::InternalServerException::what() const throw()
 {
+	return "Internal Server Error";
+}
+
+const char*	serverCore::SocketCreationException::what() const throw()
+{
+	return "Failed to create socet";
+}
+
+const char*	serverCore::ListenSocketException::what() const throw()
+{
+	return "Failed to listen to socket";
+}
+const char*	serverCore::EpollErrorException::what() const throw()
+{
+	return "Epoll failure";
+}
+
+serverCore::serverCore()
+{
+}
+
+serverCore::serverCore(std::vector<Config*>& servers)
+{
+	_epoll_fd = epoll_create1(0);
+	if (_epoll_fd == -1)
+	{
+		std::cerr << "Failed to create epoll instance" << std::endl;
+		throw InternalServerException();
+	}
+	// serverError("Failed to create epoll.");
+	for (size_t i = 0; i < servers.size(); i++)
+	{
+		Server *srv = dynamic_cast<Server*>(servers[i]);
+		startServer(*srv);
+	}
+	// for (std::vector<Config*>::iterator it = servers.begin(); it < servers.end(); it++)
+	// {
+	// 	startServer(dynamic_cast<Server*>(*it));
+	// }
 }
 
 serverCore::~serverCore() 
 {
-	close(serverSocket);
-
+	// close(_serverSocket); //obsolete
+	
+	// closing client fd removes them from epoll
 	std::map<int, clientData>::iterator it;
-	for (it = discussions.begin(); it != discussions.end(); it++)
+	for (it = _clients.begin(); it != _clients.end(); it++)
 		close(it->first);
-	close (epoll_fd);
-	discussions.clear();
+
+	std::map<int, Server*>::iterator it2;
+	for (it2 = _servers.begin(); it2 != _servers.end(); it2++)
+		close(it2->first);
+
+	close (_epoll_fd);
+	_clients.clear();
 }
 
 void	serverCore::serverError(std::string str)
@@ -23,38 +68,39 @@ void	serverCore::serverError(std::string str)
 
 void	serverCore::resetDiscussion(int fd)
 {
-	discussions[fd].body.clear();
-	discussions[fd].headerComplete = false;
-	discussions[fd].requestComplete = false;
-	discussions[fd].sendingResponse = false;
-	// discussions[fd].request.clear()
+	_clients[fd].size = 0;
+	_clients[fd].body.clear();
+	_clients[fd].headerComplete = false;
+	_clients[fd].requestComplete = false;
+	_clients[fd].sendingResponse = false;
 }
 
 void	serverCore::removeClient(int fd)
 {
-	close(fd); // This automatically removes it from epoll
-	discussions.erase(fd);
+	close(fd); // This automatically removes it from epoll apparently ???
+	_clients.erase(fd);
 }
 
-void	serverCore::setBaseSocket() // LOOK UP HOW TO LISTEN TO MUTLIPLE PORTS
+void	serverCore::setSocket(Server& server, int server_sock)
 {
-	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-	if (serverSocket < 0)
-		serverError("Failed to create socket.");
-
-	sockAddr.sin_family = AF_INET;
-	sockAddr.sin_port = htons(port);
-	sockAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	sockaddr_in	sock;
+	sock.sin_family = AF_INET;
+	sock.sin_port = htons(server.getPort());
+	sock.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	int opt = 1;
-	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-		serverError("Failed to set socket options.");
-
-	if (bind(serverSocket, (struct sockaddr*)&sockAddr, sizeof(sockaddr_in)) < 0)
+	if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) < 0)
 	{
-		std::ostringstream s;
-		s << "Failed to bind to port " << port << "." << std::endl;
-		serverError(s.str());
+		// serverError("Failed to set socket options.");
+		std::cerr << "Failed to set socket options" << std::endl;
+		throw InternalServerException();
+	}
+
+	if (bind(server_sock, (struct sockaddr*)&sock, sizeof(sockaddr_in)) < 0)
+	{
+		std::cerr << "Failed to bind to port " << server.getPort() << "." << std::endl;
+		std::cerr << strerror(errno) << std::endl; // TO REMOVE /!\ TO REMOVE
+		throw InternalServerException();
 	}
 }
 
@@ -62,22 +108,56 @@ void	serverCore::setNonBlocking(int fd)
 {
 	int flags = fcntl(fd, F_GETFL, 0);
 	if (flags < 0)
-		serverError("fcntl(F_GETFL)");
+	{
+		// serverError("fcntl(F_GETFL)");
+		std::cerr << "fcntl(F_GETFL)" << std::endl;
+		throw InternalServerException();
+	}
 	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) 
-		serverError("fcntl(F_SETFL)");
+	{
+		// serverError("fcntl(F_SETFL)");
+		std::cerr << "fcntl(F_SETFL)" << std::endl;
+		throw InternalServerException();
+	}
 }
 
-void	serverCore::createEpoll()
+bool	serverCore::addToEpoll(int serverSocket)
 {
-	epoll_fd = epoll_create1(0);
-	if (epoll_fd == -1)
-		serverError("Failed to create epoll.");
+	struct epoll_event ev;
 
-	event.events = EPOLLIN; // read events
-	event.data.fd = serverSocket;
+	ev.events = EPOLLIN; // read events
+	ev.data.fd = serverSocket;
+	
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, serverSocket, &ev) == -1) 
+	{
+		std::cerr << "Error: epoll_ctl: could not mark server fd" << std::endl;
+		return false;
+	}
+	return true;
+}
 
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, serverSocket, &event) == -1) 
-		serverError("epoll_ctl: serverSocket");
+void	serverCore::startServer(Server& serv)
+{
+	int serv_sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (serv_sock < 0)
+	{
+		std::cerr << "Failed to create socket." << std::endl;
+		throw SocketCreationException();
+	}
+		// serverError("Failed to create socket.");
+
+	setSocket(serv, serv_sock);
+	setNonBlocking(serv_sock);
+	if (listen(serv_sock, 5) < 0)
+	{
+		// serverError("Error: Failed to listen on server socket.");
+		std::cerr << "Failed to listen on server Socket." << std::endl;
+		throw ListenSocketException();
+	}
+	if (!addToEpoll(serv_sock))
+		return;
+
+	_servers[serv_sock] = &serv;
 }
 
 void serverCore::changeSocketState(int client_fd, int mode) 
@@ -86,53 +166,17 @@ void serverCore::changeSocketState(int client_fd, int mode)
 	ev.data.fd = client_fd;
 	ev.events = mode;
 
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client_fd, &ev) == -1) 
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, client_fd, &ev) == -1) 
 		std::cerr << "Error: could not mark fd " << client_fd << " as " << (mode == EPOLLIN ? "EPOLLIN\n" : "EPOLLOUT\n");
 }
 
-void	serverCore::startServer() 
-{
-	// 1. Create socket
-	// 2. Set socket options (e.g., SO_REUSEADDR)
-	// 3. Bind to an address and port
-	setBaseSocket();
-
-	// Set the socket to be non-blocking
-	setNonBlocking(serverSocket);
-
-	// Listen for connections
-	if (listen(serverSocket, SOMAXCONN) < 0) //change SOMAXCON value to however much we need
-		serverError("Error: Failed to listen on server socket.");
-
-	createEpoll();
-}
-
-void	serverCore::startServer(char *path) 
-{
-	(void)path;
-	// Parse config file
-	/*
-		- open file with path
-
-		- read until 
-			1. error with open/read
-			2. error in format
-			3. end of file
-		
-		- get all info and setup serv with it
-	*/
-
-	std::cout << "Config file used (not implemented yet)" << std::endl;
-	exit (1);
-}
-
-void	serverCore::acceptNewClients()
+void	serverCore::acceptNewClients(int server_fd)
 {
 	while (1)
 	{
 		struct sockaddr_in client_addr;
 		socklen_t client_len = sizeof(client_addr);
-		int client_fd = accept(serverSocket, (struct sockaddr *)&client_addr, &client_len);
+		int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_len);
 
 		if (client_fd == -1) // /!\ CANT USE ERRNO /!\ to research 
 		{
@@ -145,13 +189,12 @@ void	serverCore::acceptNewClients()
 			}
 		}
 
-		// Set the new client socket to non-blocking
 		setNonBlocking(client_fd);
 
 		// Add the new client socket to the epoll interest list
-		event.events = EPOLLIN;
-		event.data.fd = client_fd;
-		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &event) == -1) 
+		_event.events = EPOLLIN;
+		_event.data.fd = client_fd;
+		if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_fd, &_event) == -1) 
 		{
 			std::cerr << "Error: epoll_ctl: client_fd" << std::endl;
 			close(client_fd);
@@ -162,11 +205,16 @@ void	serverCore::acceptNewClients()
 		data.requestComplete = false;
 		data.headerComplete = false;
 		data.sendingResponse = false;
+		std::map<int, Server*>::iterator it = _servers.find(server_fd);
+		if (it == _servers.end())
+			throw (std::runtime_error("\nServer cannot be found."));
+		data.request.setServer(it->second);
 		
-		discussions[client_fd] = data;
+		_clients[client_fd] = data;
 	}
 }
 
+// /!\ Need to improve cause ugly af
 int	serverCore::receiveRequest(int fd)
 {
 	ssize_t valread;
@@ -174,34 +222,42 @@ int	serverCore::receiveRequest(int fd)
 	char buffer[BUFFER_SIZE];
 
 	// Read data from the client
-	// while (
 	if ((valread = recv(fd, buffer, BUFFER_SIZE, 0)) > 0)
 	{
-		discussions[fd].body.append(buffer, valread);
-		discussions[fd].size += valread;
+		_clients[fd].body.append(buffer, valread);
+		_clients[fd].size += valread;
 
-		if (!discussions[fd].headerComplete && discussions[fd].body.find("\r\n\r\n") != std::string::npos)
+		if (!_clients[fd].headerComplete && _clients[fd].body.find("\r\n\r\n") != std::string::npos)
 		{
-			discussions[fd].headerComplete = true;
-			discussions[fd].request.fillRequest(discussions[fd].body, discussions[fd].size);
-			if (discussions[fd].request.getSize() == 0)
+			_clients[fd].headerComplete = true;
+			_clients[fd].request.fillRequest(_clients[fd].body, _clients[fd].size);
+			int start = _clients[fd].body.find("\r\n\r\n") + 4;
+			if (_clients[fd].request.getSize() == 0)
 			{
-				discussions[fd].requestComplete = true;
+				_clients[fd].requestComplete = true;
+				changeSocketState(fd, EPOLLOUT);
+				return 1;
+			}
+			else if (_clients[fd].size - start == _clients[fd].request.getSize())
+			{
+				_clients[fd].requestComplete = true;
+				std::string body = _clients[fd].request.parseBody(_clients[fd].body);
+				_clients[fd].request.setBody(body);
 				changeSocketState(fd, EPOLLOUT);
 				return 1;
 			}
 			return 0;
 		}
-		if (discussions[fd].headerComplete)
+		if (_clients[fd].headerComplete)
 		{
-			int start = discussions[fd].body.find("\r\n\r\n") + 4;
-			if (discussions[fd].size - start == discussions[fd].request.getSize()) 
+			int start = _clients[fd].body.find("\r\n\r\n") + 4;
+			if (_clients[fd].size - start == _clients[fd].request.getSize()) 
 			{
-				std::string body = discussions[fd].request.parseBody(discussions[fd].body);
-				discussions[fd].request.setBody(body);
-				discussions[fd].requestComplete = true;
+				std::string body = _clients[fd].request.parseBody(_clients[fd].body);
+				_clients[fd].request.setBody(body);
+				_clients[fd].requestComplete = true;
 				changeSocketState(fd, EPOLLOUT);
-				//discussions[fd].request.printRequest();
+				//_clients[fd].request.printRequest();
 				return 1;
 			}
 			else
@@ -210,12 +266,12 @@ int	serverCore::receiveRequest(int fd)
 	}
 	else if (valread == 0) // Client closed the connection
 	{
-		std::cout << "Client " << fd << " disconnected" << std::endl;
-		if (!discussions[fd].requestComplete)
+		std::cout << "Client " << fd << " disconnected" << std::endl; // need to remove ?
+		if (!_clients[fd].requestComplete)
 		{
-			discussions[fd].request.setStatus(400);
+			_clients[fd].request.setStatus(400);
 			changeSocketState(fd, EPOLLOUT);
-			return (1);
+			return 1;
 		}
 		removeClient(fd);
 		return -1;
@@ -227,14 +283,13 @@ int	serverCore::receiveRequest(int fd)
 		return -1;
 	}
 
-	std::cerr << "NOT POSSIBLE : SEEK HELP FROM PRIEST IF YOU SEE THIS ERROR\n";
 	return 0;
 }
 
-void	serverCore::sendResponse(int client_fd) //, std::string* response) //, const std::vector<char> &body)
+void	serverCore::sendResponse(int client_fd)
 {
-	ssize_t	remaining = discussions[client_fd].size;
-	ssize_t sent = send(client_fd, discussions[client_fd].body.c_str(), discussions[client_fd].size, 0); // do we need flags ???
+	ssize_t	remaining = _clients[client_fd].size;
+	ssize_t sent = send(client_fd, _clients[client_fd].body.c_str(), _clients[client_fd].size, 0); // do we need flags ???
 	if (sent < 0)
 	{
 		// std::cerr << BOLD RED "Error: failed to send data to client "  RESET << client_fd << std::endl;
@@ -250,25 +305,26 @@ void	serverCore::sendResponse(int client_fd) //, std::string* response) //, cons
 	}
 	else 
 	{
-		// std::cout << BOLD CYAN "Success: " << sent << "/" << discussions[client_fd].size << "B sent to client "  RESET << client_fd << std::endl;
-		discussions[client_fd].body.erase(0, sent);
-		discussions[client_fd].size -= sent;
+		// std::cout << BOLD CYAN "Success: " << sent << "/" << _clients[client_fd].size << "B sent to client "  RESET << client_fd << std::endl;
+		_clients[client_fd].body.erase(0, sent);
+		_clients[client_fd].size -= sent;
 	}
+}
+
+bool	serverCore::findServer(int fd)
+{
+	if (_servers.find(fd) != _servers.end())
+		return true;
+	return false;
 }
 
 int	serverCore::getfd()
 { 
-	return (serverSocket);
+	return (_serverSocket);
 }
-
-clientData	serverCore::getData(int fd)
-{
-	return (discussions[fd]);
-}
-
 
 void		serverCore::setResponse(int fd, std::string& str, ssize_t len)
 {
-	discussions[fd].body = str;
-	discussions[fd].size = len;
+	_clients[fd].body = str;
+	_clients[fd].size = len;
 }
