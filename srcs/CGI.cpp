@@ -15,12 +15,9 @@ std::string getPathInfo(const std::string& uri)
 
 std::string getScriptName(const std::string& uri)
 {
-	// size_t pos = uri.find(".php");
-	// pos += 4;
-	// std::string convert = uri.substr(0, pos);
-	// return convert;
-	std::string name = "/home/lemarian/Documents/webserv/cgi-bin/register.php";
-	(void)uri;
+	size_t pos = uri.find(".php");
+	pos += 4;
+	std::string name = uri.substr(0, pos);
 	return name;
 }
 
@@ -28,7 +25,8 @@ void getEnv(const Request& request, std::vector<std::string>& env)
 {
 	env.push_back("REQUEST_METHOD=" + request.getMethod());
 	std::string name = getScriptName(request.getURI());
-	env.push_back("SCRIPT_FILENAME=" + name);
+	env.push_back("SCRIPT_NAME=" + name);
+	env.push_back("SCRIPT_FILENAME=");						//root + filename -> conf
 	env.push_back("GATEWAY_INTERFACE=CGI/1.1");
 	env.push_back("REMOTE_ADDR=127.0.0.1");					//check
 	env.push_back("SERVER_NAME=localhost");					//check config

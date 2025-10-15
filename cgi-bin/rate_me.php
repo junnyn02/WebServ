@@ -7,7 +7,7 @@ $hire   = isset($_GET['hire']) ? "Yes" : "No";
 <head>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/styles.css">
     <title>Thank you</title>
 </head>
 <body>
@@ -31,6 +31,6 @@ $hire   = isset($_GET['hire']) ? "Yes" : "No";
         <span class="toggle-label">Mode sombre</span>
     </div>
 
-    <script src="darkmode.js"></script>
+    <script src="/darkmode.js"></script>
 </body>
 </html>
