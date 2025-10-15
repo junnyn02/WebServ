@@ -9,12 +9,14 @@ class Config
 {
 	private:
 		void	findHTTP(void);
-	
+
+		const std::string findUri(std::string::iterator &) const;
+
     protected:
 		int									_body_size;
 		std::string							_file;
 		std::string							_context;
-		std::vector<Config*>				_server;
+		std::vector<Config*>				_child;
 		std::map<int, std::string>			_error_page;
 		std::map<std::string, std::string>	_parsed;
 

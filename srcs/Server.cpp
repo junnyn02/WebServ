@@ -4,27 +4,33 @@ Server::Server(const std::string &context, const int &body_size, const std::map<
 {
 	this->_context = context;
 	this->_body_size = body_size;
-	std::cout << CYAN "[INHERIT BODY SIZE]: " RESET << this->_body_size << std::endl;
+	// std::cout << CYAN "[INHERIT BODY SIZE]: " RESET << this->_body_size << std::endl;
 	if (error_page.size() != 0)
 		this->_error_page = error_page;
-	std::cout << CYAN "[INHERIT ERROR PAGE]: " RESET;
-	for (std::map<int, std::string>::iterator it = _error_page.begin(); it != _error_page.end(); ++it)
-		std::cout << it->first << " = " << it->second << std::endl;
+	// std::cout << CYAN "[INHERIT ERROR PAGE]: " RESET;
+	// for (std::map<int, std::string>::iterator it = _error_page.begin(); it != _error_page.end(); ++it)
+		// std::cout << it->first << " = " << it->second << std::endl;
 	this->_parsed = parsed;
-	std::cout << CYAN "[INHERIT INFO]: " RESET;
-	for (std::map<std::string, std::string>::iterator it = _parsed.begin(); it != _parsed.end(); ++it)
-		std::cout << it->first << "=" << it->second << std::endl;
+	// std::cout << CYAN "[INHERIT INFO]: " RESET;
+	// for (std::map<std::string, std::string>::iterator it = _parsed.begin(); it != _parsed.end(); ++it)
+		// std::cout << it->first << "=" << it->second << std::endl;
 	parseInfo("location");
-	std::cout << CYAN "[SERVER BODY SIZE]: " RESET << this->_body_size << std::endl;
-	std::cout << CYAN "[SERVER ERROR PAGE]: " RESET;
-	for (std::map<int, std::string>::iterator it = _error_page.begin(); it != _error_page.end(); ++it)
-		std::cout << it->first << " = " << it->second << std::endl;
+	// std::cout << CYAN "[SERVER BODY SIZE]: " RESET << this->_body_size << std::endl;
+	// std::cout << CYAN "[SERVER ERROR PAGE]: " RESET;
+	// for (std::map<int, std::string>::iterator it = _error_page.begin(); it != _error_page.end(); ++it)
+		// std::cout << it->first << " = " << it->second << std::endl;
 	parseServer();
-	std::cout << CYAN "[SERVER INFO]: " RESET;
-	for (std::map<std::string, std::string>::iterator it = _parsed.begin(); it != _parsed.end(); ++it)
-		std::cout << it->first << " = " << it->second << std::endl;
+	// std::cout << CYAN "[SERVER INFO]: " RESET;
+	// for (std::map<std::string, std::string>::iterator it = _parsed.begin(); it != _parsed.end(); ++it)
+		// std::cout << it->first << " = " << it->second << std::endl;
 	findChild("location");
 }
+
+// Server::~Server(void)
+// {
+// 	// for (size_t i = 0; i < _child.size(); i++)
+// 	// 	delete _child[i];
+// }
 
 void	Server::parseServer(void)
 {
@@ -55,6 +61,10 @@ void	Server::parseServer(void)
 				findPort(it);
 			else if (_context.compare(std::distance(_context.begin(), it), strlen("server_name"), "server_name") == 0)
 				findArgs(it, "server_name");
+			else if (_context.compare(std::distance(_context.begin(), it), strlen("rewrite"), "rewrite") == 0)
+				findArgs(it, "rewrite");
+			else if (_context.compare(std::distance(_context.begin(), it), strlen("return"), "return") == 0)
+				findArgs(it, "return");
 			++it;
 		}
 	}
@@ -66,7 +76,7 @@ void	Server::parseServer(void)
 		std::string	name = "localhost:" + port.str();
 		_parsed.insert(std::pair<std::string, std::string>("server_name", name));
 	}
-	std::cout << CYAN "[PORT]: " RESET << _port << std:: endl;
+	// std::cout << CYAN "[PORT]: " RESET << _port << std:: endl;
 }
 
 void	Server::findPort(std::string::iterator &it)

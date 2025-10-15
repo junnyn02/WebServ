@@ -17,6 +17,7 @@ SRC			+=	ResponseBuilder.cpp
 SRC			+=	utils.cpp
 SRC			+=	Config.cpp
 SRC			+=	Server.cpp
+SRC			+=	Location.cpp
 
 OBJ			:=	$(SRC:.cpp=.o)
 

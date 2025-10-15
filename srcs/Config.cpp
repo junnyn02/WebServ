@@ -1,5 +1,6 @@
 #include "Config.hpp"
 #include "Server.hpp"
+#include "Location.hpp"
 
 Config::Config(const std::string &filename) : _body_size(1)//, _autoindex(false)
 {
@@ -14,18 +15,18 @@ Config::Config(const std::string &filename) : _body_size(1)//, _autoindex(false)
 	_parsed.insert(std::pair<std::string, std::string>("autoindex", "off"));
 	// std::cout << BOLD GREEN "[HTTP BLOC]: " RESET << _context << std::endl;
 	parseInfo("server");
-	std::cout << BOLD GREEN "[GENERAL BODY SIZE]: " RESET << _body_size << std::endl;
-	std::cout << BOLD GREEN "[GENERAL ERROR PAGE]: " RESET;
-	for (std::map<int, std::string>::iterator it = _error_page.begin(); it != _error_page.end(); ++it)
-		std::cout << it->first << " = " << it->second << std::endl;
-	std::cout << BOLD GREEN "[FIND SERVER]: " RESET << std::endl;
+	// std::cout << BOLD GREEN "[GENERAL BODY SIZE]: " RESET << _body_size << std::endl;
+	// std::cout << BOLD GREEN "[GENERAL ERROR PAGE]: " RESET;
+	// for (std::map<int, std::string>::iterator it = _error_page.begin(); it != _error_page.end(); ++it)
+		// std::cout << it->first << " = " << it->second << std::endl;
+	// std::cout << BOLD GREEN "[FIND SERVER]: " RESET << std::endl;
 	findChild("server");
 }
 
 Config::~Config(void)
 {
-	for (size_t i = 0; i < _server.size(); i++)
-		delete _server[i];
+	for (size_t i = 0; i < _child.size(); i++)
+		delete _child[i];
 }
 
 void Config::findHTTP(void)
@@ -168,6 +169,9 @@ void	Config::findChild(const std::string &child)
 		if (found != std::string::npos && checkComment(_context, found))
 		{
 			std::string::iterator it = _context.begin() + found + child.size();
+			std::string	uri;
+			if (child == "location")
+				uri = findUri(it);
 			while (it != _context.end() && *it != '{' && *it != '\n')
 				++it;
 			if (*it == '{' && checkComment(_context, std::distance(_context.begin(), it)))
@@ -178,11 +182,15 @@ void	Config::findChild(const std::string &child)
 					Server *server = new Server(parsed, _body_size, _error_page, _parsed);
 					if (!server)
 						throw(std::runtime_error("Gerer erreur"));
-					_server.push_back(server);					
+					_child.push_back(server);					
 				}
 				else
 				{
-					std::cout << "* DO LOCATION *" << std::endl;
+					Location *location = new Location(uri, parsed, _body_size, _error_page, _parsed);
+					if (!location)
+						throw(std::runtime_error("Gerer erreur"));
+					_child.push_back(location);
+					// std::cout << "* DO LOCATION *" << std::endl;
 				}
 			}
 		}
@@ -190,8 +198,25 @@ void	Config::findChild(const std::string &child)
 			break ;
 		found += child.size();
 	}
-	if (_server.size() == 0 && child == "server")
+	if (_child.size() == 0 && child == "server")
 		throw(std::runtime_error("No Server Context found"));
+}
+
+const std::string	Config::findUri(std::string::iterator &it) const
+{
+	while (it != _context.end() && isspace(*it))
+		++it;
+	std::string::iterator	ite = it;
+	while (ite != _context.end() && *ite != '{')
+		++ite;
+	if (*ite == '{')
+		--ite;
+	while (isspace(*ite) && ite != it)
+		--ite;
+	if (ite != _context.end())
+		++ite;
+	std::string	uri(it, ite);
+	return (uri);
 }
 
 std::string::iterator	Config::checkEnd(std::string::iterator &it)
@@ -232,7 +257,7 @@ bool	Config::checkComment(std::string &str, const size_t &found)
 
 const std::vector<Config*>	&Config::getServer(void) const
 {
-	return (this->_server);
+	return (this->_child);
 }
 
 const int	&Config::getBodySize(void) const
