@@ -5,7 +5,21 @@ const char*	serverCore::InternalServerException::what() const throw()
 	return "Internal Server Error";
 }
 
-serverCore::serverCore() : _port(8080)
+const char*	serverCore::SocketCreationException::what() const throw()
+{
+	return "Failed to create socet";
+}
+
+const char*	serverCore::ListenSocketException::what() const throw()
+{
+	return "Failed to listen to socket";
+}
+const char*	serverCore::EpollErrorException::what() const throw()
+{
+	return "Epoll failure";
+}
+
+serverCore::serverCore()
 {
 }
 
@@ -25,11 +39,17 @@ serverCore::serverCore(std::vector<Server>& servers)
 
 serverCore::~serverCore() 
 {
-	close(_serverSocket);
+	// close(_serverSocket); //obsolete
 	
+	// closing client fd removes them from epoll
 	std::map<int, clientData>::iterator it;
 	for (it = _clients.begin(); it != _clients.end(); it++)
-	close(it->first);
+		close(it->first);
+
+	std::map<int, Server*>::iterator it2;
+	for (it2 = _servers.begin(); it2 != _servers.end(); it2++)
+		close(it2->first);
+
 	close (_epoll_fd);
 	_clients.clear();
 }
@@ -42,11 +62,11 @@ void	serverCore::serverError(std::string str)
 
 void	serverCore::resetDiscussion(int fd)
 {
+	_clients[fd].size = 0;
 	_clients[fd].body.clear();
 	_clients[fd].headerComplete = false;
 	_clients[fd].requestComplete = false;
 	_clients[fd].sendingResponse = false;
-	// _clients[fd].request.clear()
 }
 
 void	serverCore::removeClient(int fd)
@@ -76,30 +96,6 @@ void	serverCore::setSocket(Server& server, int server_sock)
 		std::cerr << strerror(errno) << std::endl; // TO REMOVE /!\ TO REMOVE
 		throw InternalServerException();
 	}
-}
-
-void	serverCore::startServer(Server& serv)
-{
-	int serv_sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (serv_sock < 0)
-	{
-		std::cerr << "Failed to create socket." << std::endl;
-		throw InternalServerException();
-	}
-		// serverError("Failed to create socket.");
-
-	setSocket(serv, serv_sock);
-	setNonBlocking(serv_sock);
-	if (listen(serv_sock, 5) < 0)
-	{
-		// serverError("Error: Failed to listen on server socket.");
-		std::cerr << "Failed to listen on server Socket." << std::endl;
-		throw InternalServerException();
-	}
-	if (!addToEpoll(serv_sock))
-		return;
-
-	_servers[serv_sock] = &serv;
 }
 
 void	serverCore::setNonBlocking(int fd)
@@ -134,6 +130,30 @@ bool	serverCore::addToEpoll(int serverSocket)
 	return true;
 }
 
+void	serverCore::startServer(Server& serv)
+{
+	int serv_sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (serv_sock < 0)
+	{
+		std::cerr << "Failed to create socket." << std::endl;
+		throw SocketCreationException();
+	}
+		// serverError("Failed to create socket.");
+
+	setSocket(serv, serv_sock);
+	setNonBlocking(serv_sock);
+	if (listen(serv_sock, 5) < 0)
+	{
+		// serverError("Error: Failed to listen on server socket.");
+		std::cerr << "Failed to listen on server Socket." << std::endl;
+		throw ListenSocketException();
+	}
+	if (!addToEpoll(serv_sock))
+		return;
+
+	_servers[serv_sock] = &serv;
+}
+
 void serverCore::changeSocketState(int client_fd, int mode) 
 {
 	struct epoll_event ev;
@@ -144,13 +164,13 @@ void serverCore::changeSocketState(int client_fd, int mode)
 		std::cerr << "Error: could not mark fd " << client_fd << " as " << (mode == EPOLLIN ? "EPOLLIN\n" : "EPOLLOUT\n");
 }
 
-void	serverCore::acceptNewClients()
+void	serverCore::acceptNewClients(int server_fd)
 {
 	while (1)
 	{
 		struct sockaddr_in client_addr;
 		socklen_t client_len = sizeof(client_addr);
-		int client_fd = accept(_serverSocket, (struct sockaddr *)&client_addr, &client_len);
+		int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_len);
 
 		if (client_fd == -1) // /!\ CANT USE ERRNO /!\ to research 
 		{
@@ -163,7 +183,6 @@ void	serverCore::acceptNewClients()
 			}
 		}
 
-		// Set the new client socket to non-blocking
 		setNonBlocking(client_fd);
 
 		// Add the new client socket to the epoll interest list
@@ -176,6 +195,7 @@ void	serverCore::acceptNewClients()
 		}
 		clientData data;
 		data.clientSocket = client_fd;
+		data.serverSocket = server_fd;
 		data.size = 0;
 		data.requestComplete = false;
 		data.headerComplete = false;
@@ -237,12 +257,12 @@ int	serverCore::receiveRequest(int fd)
 	}
 	else if (valread == 0) // Client closed the connection
 	{
-		std::cout << "Client " << fd << " disconnected" << std::endl;
+		std::cout << "Client " << fd << " disconnected" << std::endl; // need to remove ?
 		if (!_clients[fd].requestComplete)
 		{
 			_clients[fd].request.setStatus(400);
 			changeSocketState(fd, EPOLLOUT);
-			return (1);
+			return 1;
 		}
 		removeClient(fd);
 		return -1;
@@ -257,7 +277,7 @@ int	serverCore::receiveRequest(int fd)
 	return 0;
 }
 
-void	serverCore::sendResponse(int client_fd) //, std::string* response) //, const std::vector<char> &body)
+void	serverCore::sendResponse(int client_fd)
 {
 	ssize_t	remaining = _clients[client_fd].size;
 	ssize_t sent = send(client_fd, _clients[client_fd].body.c_str(), _clients[client_fd].size, 0); // do we need flags ???
@@ -280,6 +300,13 @@ void	serverCore::sendResponse(int client_fd) //, std::string* response) //, cons
 		_clients[client_fd].body.erase(0, sent);
 		_clients[client_fd].size -= sent;
 	}
+}
+
+bool	serverCore::findServer(int fd)
+{
+	if (_servers.find(fd) != _servers.end())
+		return true;
+	return false;
 }
 
 int	serverCore::getfd()

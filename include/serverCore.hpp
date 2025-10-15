@@ -13,6 +13,7 @@
 typedef struct clientData
 {
 	int			clientSocket;
+	int			serverSocket; // which server is the client comunicating with
 	int			size;
 	std::string	body;
 	// bool		requestChunked;
@@ -26,8 +27,7 @@ class serverCore
 {
 private:
 
-	int							_serverSocket;
-	sockaddr_in					_sockAddr;
+	int							_serverSocket; // obsolete
 	std::map<int, Server*>		_servers;
 	// std::map<int, sockaddr_in>	_sockAddrMap;
 	
@@ -36,7 +36,6 @@ private:
 	void	startServer(Server&);
 	
 public:
-	int			_port;					// listening port, mandatory parameter
 	int			_epoll_fd;
 	struct epoll_event _event;
 	//allowed methods   allow_methods POST GET; (could do an int value and check binary (like 1==GET, 10==POST, 100==other etc))
@@ -48,10 +47,10 @@ public:
 	~serverCore();
 	
 	void		serverError(std::string);
-	void		startServer();
 	void		setNonBlocking(int);
 	void		changeSocketState(int, int);
-	void		acceptNewClients();
+
+	void		acceptNewClients(int);
 
 	void		resetDiscussion(int);
 	void		removeClient(int);
@@ -63,9 +62,25 @@ public:
 	// void		sendResponse(clientData);
 
 	int			getfd();
+	bool		findServer(int);
 	void		setResponse(int, std::string&, ssize_t);
 
 	class InternalServerException : public std::exception 
+	{
+		public:
+			const char*	what() const throw();
+	};
+	class SocketCreationException : public std::exception 
+	{
+		public:
+			const char*	what() const throw();
+	};
+	class ListenSocketException : public std::exception 
+	{
+		public:
+			const char*	what() const throw();
+	};
+	class EpollErrorException : public std::exception 
 	{
 		public:
 			const char*	what() const throw();
