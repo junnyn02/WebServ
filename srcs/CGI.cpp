@@ -21,12 +21,37 @@ std::string getScriptName(const std::string& uri)
 	return name;
 }
 
+void printConfig(const std::map<std::string, std::string>& config)
+{
+	std::cout << "PRINT\n";
+	std::map<std::string, std::string>::const_iterator it = config.begin();
+	int i = 1;
+	while (it != config.end())
+	{
+		std::cout << i++ << it->first << " : " << it->second << std::endl;
+		it++;
+	}
+}
+
+void printEnv(std::vector<std::string>& env)
+{
+	std::vector<std::string>::iterator it = env.begin();
+	while (it != env.end())
+	{
+		std::cout << *it << std::endl;
+		it++;
+	}
+}
+
 void getEnv(const Request& request, std::vector<std::string>& env)
 {
+	printConfig(request.getInfo());
+	std::map<std::string, std::string> config = request.getInfo();
 	env.push_back("REQUEST_METHOD=" + request.getMethod());
 	std::string name = getScriptName(request.getURI());
 	env.push_back("SCRIPT_NAME=" + name);
-	env.push_back("SCRIPT_FILENAME=");						//root + filename -> conf
+	std::map<std::string, std::string>::iterator it = config.find("root");	//will probably change to alias
+	env.push_back("SCRIPT_FILENAME=" + it->second + name);										//root + filename -> conf
 	env.push_back("GATEWAY_INTERFACE=CGI/1.1");
 	env.push_back("REMOTE_ADDR=127.0.0.1");					//check
 	env.push_back("SERVER_NAME=localhost");					//check config
@@ -48,6 +73,7 @@ void getEnv(const Request& request, std::vector<std::string>& env)
 	env.push_back("PATH_INFO=" + path_info);					//opt
 	env.push_back("PATH_TRANSLATED=");							//opt
 	//HTTP_* headers?
+	//printEnv(env);
 }
 
 std::string execCGI(const Request& request)						//define CGI timeout?
@@ -133,7 +159,7 @@ std::string execCGI(const Request& request)						//define CGI timeout?
 				std::string response = 
 				"HTTP/1.1 200 OK\r\nContent-Length: " + size + "\r\n"
 				+ convert.str() + "\r\n\r\n";
-				std::cout << response << std::endl;
+				//std::cout << response << std::endl;
 				return response;
 			}
 		}

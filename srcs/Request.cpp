@@ -1,5 +1,6 @@
 #include "../include/Request.hpp"
 #include "../include/serverCore.hpp"
+#include "CGI.hpp"
 
 Request::Request()
 {
@@ -87,6 +88,11 @@ int Request::getSize() const
 int Request::getStatus() const
 {
 	return (_status);
+}
+
+const std::map<std::string, std::string>& Request::getInfo(void) const
+{
+	return this->_server->getInfo();
 }
 
 void Request::printRequest()
@@ -360,6 +366,8 @@ void Request::fillRequest(const std::string& data, int data_size)
 		std::cerr << _status << " Bad request: claimed length inconsistent with received bytes\n";
 		return;
 	}
+	// std::cout << "CONF SIZE " << _server->getInfo().size() << std::endl;
+	// printConfig(_server->getInfo());
 	//check if body is too long, error 413 -> defined in config file
 }
 

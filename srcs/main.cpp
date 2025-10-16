@@ -4,6 +4,7 @@
 #include "Server.hpp"
 #include "ResponseBuilder.hpp"
 #include "Location.hpp"
+#include "CGI.hpp"
 
 // Signal handler function
 void signalHandler(int sig) 
@@ -48,11 +49,16 @@ int	main(int ac, char** av)
 					serv.receiveRequest(client);
 				else if (events[i].events & EPOLLOUT)
 				{
-					// serv._clients[client].request.printRequest();
-					if (!serv._clients[client].sendingResponse)
+					if (!serv._clients[client].sendingResponse)//change CGI
 					{
-						ResponseBuilder	response(serv._clients[client].request);
-						std::string	resp = response.getHeader();
+						std::string resp;
+						if (serv._clients[client].request.getCgi() == false)
+						{
+							ResponseBuilder	response(serv._clients[client].request);
+							resp = response.getHeader();
+						}
+						else
+							resp = execCGI(serv._clients[client].request);
 						serv.setResponse(client, resp, resp.size());
 						serv._clients[client].sendingResponse = true;
 					}

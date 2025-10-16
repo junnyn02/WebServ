@@ -55,6 +55,7 @@ class Request
 		const std::string& getBody() const;
 		int getSize() const;
 		int getStatus() const;
+		const std::map<std::string, std::string>& getInfo(void) const;
 
 		void	setStatus(int);
 		void	setServer(Server*);

@@ -8,7 +8,7 @@
 
 std::string execCGI(const Request& request);
 void getEnv(const Request& request, std::vector<std::string>& env);
-
+void printConfig(const std::map<std::string, std::string>& config);
 /*
 - env (char** or map or char* vector)
 - av (char ** or char* vector)
