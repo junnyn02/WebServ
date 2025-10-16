@@ -20,6 +20,8 @@
 #include <limits>
 
 std::string size_t_to_string(size_t n);
+void printConfig(const std::map<std::string, std::string>& config);
+
 
 
 #define BLACK   "\033[30m"

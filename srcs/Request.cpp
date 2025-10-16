@@ -254,6 +254,12 @@ int Request::parseHeaders(std::string& headers)
 		{
 			std::stringstream convert(it->second);
 			convert >> _size;
+			if (static_cast<int>(_size) / 1000000 > _server->getBodySize())
+			{
+				_status = 413;
+				std::cerr << _status << " Content Too large\n";
+				return 0;
+			}
 		}
 		it = _headers.find("content-type");
 		if (it == _headers.end())
@@ -366,9 +372,6 @@ void Request::fillRequest(const std::string& data, int data_size)
 		std::cerr << _status << " Bad request: claimed length inconsistent with received bytes\n";
 		return;
 	}
-	// std::cout << "CONF SIZE " << _server->getInfo().size() << std::endl;
-	// printConfig(_server->getInfo());
-	//check if body is too long, error 413 -> defined in config file
 }
 
 void	Request::setURI(const std::string &new_str)
