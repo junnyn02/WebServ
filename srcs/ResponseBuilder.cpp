@@ -279,7 +279,7 @@ void    ResponseBuilder::tryDelete(void)
     if (_code != "204 No Content")
     {
         _type = getType();
-        _body = getBody();
+        // _body = setBody();
     }
 }
 
