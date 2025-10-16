@@ -7,6 +7,7 @@ class Location : public Config
 {
 	private:
 		std::string					_uri;
+		std::string					_modifier; //if '=' or ~ or none;
 		std::vector<std::string>	_method;
 
 		void	parseLocation(void);
