@@ -26,13 +26,11 @@ class serverCore
 {
 private:
 
-	int							_serverSocket; // obsolete
 	std::map<int, Server*>		_servers;
-	// std::map<int, sockaddr_in>	_sockAddrMap;
 	
-	void	setSocket(Server&, int);
+	void	setSocket(Server*, int);
 	bool	addToEpoll(int);
-	void	startServer(Server&);
+	void	startServer(Server*);
 	
 public:
 	int			_epoll_fd;
@@ -60,28 +58,6 @@ public:
 	// clientData	receiveRequest(int fd);
 	// void		sendResponse(clientData);
 
-	int			getfd();
 	bool		findServer(int);
 	void		setResponse(int, std::string&, ssize_t);
-
-	class InternalServerException : public std::exception 
-	{
-		public:
-			const char*	what() const throw();
-	};
-	class SocketCreationException : public std::exception 
-	{
-		public:
-			const char*	what() const throw();
-	};
-	class ListenSocketException : public std::exception 
-	{
-		public:
-			const char*	what() const throw();
-	};
-	class EpollErrorException : public std::exception 
-	{
-		public:
-			const char*	what() const throw();
-	};
 };

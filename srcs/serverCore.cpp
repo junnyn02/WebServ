@@ -1,24 +1,5 @@
 #include "serverCore.hpp"
 
-const char*	serverCore::InternalServerException::what() const throw()
-{
-	return "Internal Server Error";
-}
-
-const char*	serverCore::SocketCreationException::what() const throw()
-{
-	return "Failed to create socet";
-}
-
-const char*	serverCore::ListenSocketException::what() const throw()
-{
-	return "Failed to listen to socket";
-}
-const char*	serverCore::EpollErrorException::what() const throw()
-{
-	return "Epoll failure";
-}
-
 serverCore::serverCore()
 {
 }
@@ -27,20 +8,9 @@ serverCore::serverCore(std::vector<Config*>& servers)
 {
 	_epoll_fd = epoll_create1(0);
 	if (_epoll_fd == -1)
-	{
-		std::cerr << "Failed to create epoll instance" << std::endl;
-		throw InternalServerException();
-	}
-	// serverError("Failed to create epoll.");
+		throw (std::runtime_error("\nFailed to create epoll instance."));
 	for (size_t i = 0; i < servers.size(); i++)
-	{
-		Server *srv = dynamic_cast<Server*>(servers[i]);
-		startServer(*srv);
-	}
-	// for (std::vector<Config*>::iterator it = servers.begin(); it < servers.end(); it++)
-	// {
-	// 	startServer(dynamic_cast<Server*>(*it));
-	// }
+		startServer(dynamic_cast<Server*>(servers[i]));
 }
 
 serverCore::~serverCore() 
@@ -81,26 +51,22 @@ void	serverCore::removeClient(int fd)
 	_clients.erase(fd);
 }
 
-void	serverCore::setSocket(Server& server, int server_sock)
+void	serverCore::setSocket(Server* server, int server_sock)
 {
 	sockaddr_in	sock;
 	sock.sin_family = AF_INET;
-	sock.sin_port = htons(server.getPort());
+	sock.sin_port = htons(server->getPort());
 	sock.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	int opt = 1;
 	if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) < 0)
-	{
-		// serverError("Failed to set socket options.");
-		std::cerr << "Failed to set socket options" << std::endl;
-		throw InternalServerException();
-	}
+		throw (std::runtime_error("\nFailed to set socket options."));
 
 	if (bind(server_sock, (struct sockaddr*)&sock, sizeof(sockaddr_in)) < 0)
 	{
-		std::cerr << "Failed to bind to port " << server.getPort() << "." << std::endl;
-		std::cerr << strerror(errno) << std::endl; // TO REMOVE /!\ TO REMOVE
-		throw InternalServerException();
+		std::ostringstream s;
+		s << "Failed to bind to port " << server->getPort() << "." << std::endl;
+		throw (std::runtime_error(s.str()));
 	}
 }
 
@@ -108,17 +74,9 @@ void	serverCore::setNonBlocking(int fd)
 {
 	int flags = fcntl(fd, F_GETFL, 0);
 	if (flags < 0)
-	{
-		// serverError("fcntl(F_GETFL)");
-		std::cerr << "fcntl(F_GETFL)" << std::endl;
-		throw InternalServerException();
-	}
+		throw (std::runtime_error("fcntl(F_GETFL)"));
 	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) 
-	{
-		// serverError("fcntl(F_SETFL)");
-		std::cerr << "fcntl(F_SETFL)" << std::endl;
-		throw InternalServerException();
-	}
+		throw (std::runtime_error("fcntl(F_SETFL)"));
 }
 
 bool	serverCore::addToEpoll(int serverSocket)
@@ -136,28 +94,21 @@ bool	serverCore::addToEpoll(int serverSocket)
 	return true;
 }
 
-void	serverCore::startServer(Server& serv)
+void	serverCore::startServer(Server* serv)
 {
 	int serv_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (serv_sock < 0)
-	{
-		std::cerr << "Failed to create socket." << std::endl;
-		throw SocketCreationException();
-	}
-		// serverError("Failed to create socket.");
+		throw (std::runtime_error("Failed to create socket."));
 
 	setSocket(serv, serv_sock);
 	setNonBlocking(serv_sock);
 	if (listen(serv_sock, 5) < 0)
-	{
-		// serverError("Error: Failed to listen on server socket.");
-		std::cerr << "Failed to listen on server Socket." << std::endl;
-		throw ListenSocketException();
-	}
+		throw (std::runtime_error("Failed to listen on server Socket."));
+		
 	if (!addToEpoll(serv_sock))
 		return;
 
-	_servers[serv_sock] = &serv;
+	_servers[serv_sock] = serv;
 }
 
 void serverCore::changeSocketState(int client_fd, int mode) 
@@ -316,11 +267,6 @@ bool	serverCore::findServer(int fd)
 	if (_servers.find(fd) != _servers.end())
 		return true;
 	return false;
-}
-
-int	serverCore::getfd()
-{ 
-	return (_serverSocket);
 }
 
 void		serverCore::setResponse(int fd, std::string& str, ssize_t len)

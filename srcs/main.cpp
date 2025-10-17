@@ -36,7 +36,7 @@ int	main(int ac, char** av)
 		{
 			int n_events = epoll_wait(serv._epoll_fd, events, MAX_EVENTS, 5000); // SET TIMEOUT (instead of -1)
 			if (n_events == -1)
-				throw serverCore::EpollErrorException();
+				throw (std::runtime_error("\nEpoll error: epoll_wait failed."));
 
 			for (int i = 0; i < n_events; i++) 
 			{
