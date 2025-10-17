@@ -18,11 +18,12 @@ class ResponseBuilder
         std::string                         _filename;
         std::string                         _header;
         Server*                             _server;
-        std::vector<Location*>              _location;
+        Location*                           _location;
+        bool                                _location_matched;
 
     public:
         ResponseBuilder(const Request &);
-        ~ResponseBuilder(void);
+        ~ResponseBuilder(void) {};
     
         void                    tryGet(void);
         void                    buildListUploads(void);
@@ -34,9 +35,10 @@ class ResponseBuilder
         
         void                    setError(const std::string &);
         void                    checkErrorPage(void);
-        
-        bool                    checkMime(void);        
+
+        bool                    checkMime(void) const;   
         bool                    createFile(void);
+        bool                    checkURI(void);
 
         const std::string       build204(void);
         

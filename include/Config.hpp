@@ -11,7 +11,8 @@ class Config
 	private:
 		void	findHTTP(void);
 
-		const std::string findUri(std::string::iterator &) const;
+		const std::string							checkModifier(std::string &) const;
+		const std::map<std::string, std::string>	findUri(std::string::iterator &) const;
 
     protected:
 		int									_body_size;

@@ -170,7 +170,7 @@ void	Config::findChild(const std::string &child)
 		if (found != std::string::npos && checkComment(_context, found))
 		{
 			std::string::iterator it = _context.begin() + found + child.size();
-			std::string	uri;
+			std::map<std::string, std::string>	uri;
 			if (child == "location")
 				uri = findUri(it);
 			while (it != _context.end() && *it != '{' && *it != '\n')
@@ -191,7 +191,6 @@ void	Config::findChild(const std::string &child)
 					if (!location)
 						throw(std::runtime_error("Gerer erreur"));
 					_child.push_back(location);
-					// std::cout << "* DO LOCATION *" << std::endl;
 				}
 			}
 		}
@@ -203,7 +202,7 @@ void	Config::findChild(const std::string &child)
 		throw(std::runtime_error("No Server Context found"));
 }
 
-const std::string	Config::findUri(std::string::iterator &it) const
+const std::map<std::string, std::string>	Config::findUri(std::string::iterator &it) const
 {
 	while (it != _context.end() && isspace(*it))
 		++it;
@@ -217,7 +216,30 @@ const std::string	Config::findUri(std::string::iterator &it) const
 	if (ite != _context.end())
 		++ite;
 	std::string	uri(it, ite);
-	return (uri);
+	std::string modifier = checkModifier(uri);
+	std::map<std::string, std::string> directive;
+	directive.insert(std::pair<std::string, std::string>(uri, modifier));
+	return (directive);
+}
+
+const std::string	Config::checkModifier(std::string &uri) const
+{
+	std::string	modifier;
+	std::string::iterator it = uri.begin();
+	if (*it == '=')
+	{
+		modifier = "=";
+		++it;
+		while (it != uri.end() && isspace(*it))
+			++it;
+		if (it == uri.end())
+			throw(std::runtime_error("No URI found"));
+		uri.erase(uri.begin(), it);
+		return (modifier);
+	}
+	else if (*it == '~' || *it == '^')
+		throw(std::runtime_error("Regexp not accepted"));
+	return ("none");
 }
 
 std::string::iterator	Config::checkEnd(std::string::iterator &it)

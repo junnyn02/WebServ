@@ -1,32 +1,18 @@
 #include "Location.hpp"
 
-Location::Location(const std::string &uri, const std::string &context, const int &body_size,
-	const std::map<int, std::string> &error_page, const std::map<std::string, std::string> &parsed) : Config(), _uri(uri)
+Location::Location(const std::map<std::string, std::string> &uri, const std::string &context, const int &body_size,
+	const std::map<int, std::string> &error_page, const std::map<std::string, std::string> &parsed) : Config()
 {
-	// std::cout << YELLOW "[LOCATION URI]: " RESET << "|" << this->_uri << "|" << std::endl;
+	std::map<std::string, std::string>::const_iterator it = uri.begin();
+	_uri = it->first;
+	_modifier = it->second;
 	this->_context = context;
 	this->_body_size = body_size;
-	// std::cout << YELLOW "[INHERIT BODY SIZE]: " RESET << this->_body_size << std::endl;
 	if (error_page.size() != 0)
 		this->_error_page = error_page;
-	// std::cout << YELLOW "[INHERIT ERROR PAGE]: " RESET;
-	// for (std::map<int, std::string>::iterator it = _error_page.begin(); it != _error_page.end(); ++it)
-		// std::cout << it->first << " = " << it->second << std::endl;
 	this->_parsed = parsed;
-	// std::cout << YELLOW "[INHERIT INFO]: " RESET;
-	// for (std::map<std::string, std::string>::iterator it = _parsed.begin(); it != _parsed.end(); ++it)
-		// std::cout << it->first << "=" << it->second << std::endl;
 	parseInfo("location");
-	// std::cout << YELLOW "[LOCATION BODY SIZE]: " RESET << this->_body_size << std::endl;
-	// std::cout << YELLOW "[LOCATION ERROR PAGE]: " RESET;
-	// for (std::map<int, std::string>::iterator it = _error_page.begin(); it != _error_page.end(); ++it)
-		// std::cout << it->first << " = " << it->second << std::endl;
 	parseLocation();
-	std::cout << YELLOW "[LOCATION INFO]: " RESET << _uri << std::endl;
-	for (std::map<std::string, std::string>::iterator it = _parsed.begin(); it != _parsed.end(); ++it)
-		std::cout << '\t' << it->first << " = " << it->second << std::endl;
-	for (std::vector<std::string>::iterator it = _method.begin(); it != _method.end(); ++it)
-		std::cout << '\t' << *it << std::endl;
 }
 
 void	Location::parseLocation(void)
@@ -99,4 +85,9 @@ const std::string	&Location::getUri(void) const
 const std::vector<std::string>	&Location::getMethod(void) const
 {
 	return (this->_method);
+}
+
+const std::string	&Location::getModifier(void) const
+{
+	return (this->_modifier);
 }

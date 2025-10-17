@@ -13,10 +13,11 @@ class Location : public Config
 		void	parseLocation(void);
 		void	findLimit(std::string::iterator &);
 	public:
-		Location(const std::string &, const std::string &, const int &, const std::map<int,
+		Location(const std::map<std::string, std::string> &, const std::string &, const int &, const std::map<int,
 			std::string> &, const std::map<std::string, std::string> &);
 		virtual ~Location(void) {};
 
 		const std::string				&getUri(void) const;
+		const std::string				&getModifier(void) const;
 		const std::vector<std::string>	&getMethod(void) const;
 };

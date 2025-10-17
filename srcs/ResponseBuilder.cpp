@@ -2,7 +2,7 @@
 
 //remplacer le root par le dossier reel ou est l'index, ex: http://localhost:8080/home/junguyen/Desktop/C05/WebServ/data/www/html/index.html
 
-ResponseBuilder::ResponseBuilder(const Request &request) : _request(request)
+ResponseBuilder::ResponseBuilder(const Request &request) : _request(request), _location_matched(false)
 {
     _mime.insert(std::pair<std::string, std::string>(".htm", "text/html"));
     _mime.insert(std::pair<std::string, std::string>(".html", "text/html"));
@@ -14,47 +14,55 @@ ResponseBuilder::ResponseBuilder(const Request &request) : _request(request)
     _mime.insert(std::pair<std::string, std::string>(".jpg", "image/jpeg"));
     _mime.insert(std::pair<std::string, std::string>(".gif", "image/gif"));
     _mime.insert(std::pair<std::string, std::string>(".txt", "text/plain"));
-    _server = _request.getServer(); //Server recuperer de Request
-    std::vector<Config*> locations = _server->getChild(); //getChild();
-    for (size_t i = 0; i < locations.size(); i++)
-    {
-        _location.push_back(dynamic_cast<Location *>(locations[i]));
-        std::cout << i << ": " << _location[i]->getUri() << std::endl;
-    }
-    std::map<std::string, std::string> info = _location[0]->getInfo();
-    std::cout << "[LOCATION 0]" << std::endl;
-    for (std::map<std::string, std::string>::iterator it = info.begin(); it != info.end(); ++it)
-        std::cout << "\t" << it->first << " : " << it->second << std::endl;
-    info = _location[1]->getInfo();
-    std::cout << "[LOCATION 1]" << std::endl;
-    for (std::map<std::string, std::string>::iterator it = info.begin(); it != info.end(); ++it)
-        std::cout << "\t" << it->first << " : " << it->second << std::endl;
-    std::map<std::string, std::string>::iterator found = info.find("alias");
-    if (found != info.end())
-        std::cout << "[ALIAS]=" << found->second << std::endl;
+    _server = _request.getServer();
+    std::vector<Config*> locations = _server->getChild();
+    _location_matched = checkURI();
+    if (_location_matched)
+        std::cout << _location->getUri() << std::endl;
     if (_request.getStatus() != 0)
         checkErrorPage();
     sendResponse();
 }
 
-ResponseBuilder::~ResponseBuilder()
+bool    ResponseBuilder::checkURI(void)
 {
+    std::vector<Config*> locations = _server->getChild();
+    size_t i = 0;
+    while (i < locations.size())
+    {
+        _location = dynamic_cast<Location*>(locations[i]);
+        if (_location->getModifier() == "=")
+        {
+            if (_location->getUri() == _request.getURI())
+                return true;
+        }
+        i++;
+    }
+    i = 0;
+    std::map<size_t, Location*>   best_match;
+    while (i < locations.size())
+    {
+        Location *loc = dynamic_cast<Location*>(locations[i]);
+        if (loc->getModifier() != "=")
+        {
+            if (_request.getURI().compare(0, loc->getUri().size(), loc->getUri()) == 0)
+                best_match.insert(std::pair<size_t, Location*>(loc->getUri().size(), loc));
+        }
+        i++;
+    }
+    if (best_match.size() != 0)
+    {
+        std::map<size_t, Location*>::iterator it = best_match.end();
+        --it;
+        _location = it->second;
+        return true;
+    }
+    return false;
 }
 
 void    ResponseBuilder::checkErrorPage(void)
 {
     std::cout << "DO SMTHG" << std::endl;
-    // std::vector<Config*> locations = _server->getChild();
-    // std::vector<Location*> location;
-    // for (size_t i = 0; i < locations.size(); i++)
-    // {
-    //     location.push_back(dynamic_cast<Location *>(locations[i]));
-    //     // std::map<int, std::string> error = location->getError();
-    //     // std::map<int, std::string>::const_iterator found = error.find(_request.getStatus());
-    //     // if (found != error.end())
-    //     //     return (setError(found->second));
-    //     std::cout << location[i]->getUri() << std::endl;
-    // }
 }
 
 void    ResponseBuilder::setError(const std::string &)
@@ -205,7 +213,7 @@ void    ResponseBuilder::tryGet(void)
     _body = setBody();
 }
 
-bool    ResponseBuilder::checkMime(void)
+bool    ResponseBuilder::checkMime(void) const
 {
     // std::cout << "[CHECK_MIME] type is : " << _request.getType() << std::endl;
     if (_request.getType() == "image/png" || _request.getType() == "image/jpeg" || _request.getType() == "image/jpg" || _request.getType() == "image/gif")

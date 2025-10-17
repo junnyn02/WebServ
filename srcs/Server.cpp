@@ -27,12 +27,6 @@ Server::Server(const std::string &context, const int &body_size, const std::map<
 	findChild("location");
 }
 
-// Server::~Server(void)
-// {
-// 	// for (size_t i = 0; i < _child.size(); i++)
-// 	// 	delete _child[i];
-// }
-
 void	Server::parseServer(void)
 {
 	std::string::iterator it = _context.begin();
