@@ -10,7 +10,8 @@ serverCore::serverCore(std::vector<Config*>& servers)
 	if (_epoll_fd == -1)
 		throw (std::runtime_error("\nFailed to create epoll instance."));
 	for (size_t i = 0; i < servers.size(); i++)
-		startServer(dynamic_cast<Server*>(servers[i]));
+		if (!startServer(dynamic_cast<Server*>(servers[i])))
+			throw (std::runtime_error("\nFailed to start server."));
 }
 
 serverCore::~serverCore() 
@@ -28,12 +29,6 @@ serverCore::~serverCore()
 
 	close (_epoll_fd);
 	_clients.clear();
-}
-
-void	serverCore::serverError(std::string str)
-{
-	std::cerr << "Internal Server Error: " << str << std::endl;
-	std::exit(EXIT_FAILURE);
 }
 
 void	serverCore::resetDiscussion(int fd)
@@ -79,22 +74,21 @@ void	serverCore::setNonBlocking(int fd)
 		throw (std::runtime_error("fcntl(F_SETFL)"));
 }
 
-bool	serverCore::addToEpoll(int serverSocket)
+void	serverCore::addToEpoll(int socket)
 {
 	struct epoll_event ev;
 
 	ev.events = EPOLLIN; // read events
-	ev.data.fd = serverSocket;
+	ev.data.fd = socket;
 	
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, serverSocket, &ev) == -1) 
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, socket, &ev) == -1) 
 	{
-		std::cerr << "Error: epoll_ctl: could not mark server fd" << std::endl;
-		return false;
+		close(socket);
+		throw (std::runtime_error("Error: epoll_ctl: could not mark server fd"));
 	}
-	return true;
 }
 
-void	serverCore::startServer(Server* serv)
+bool	serverCore::startServer(Server* serv)
 {
 	int serv_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (serv_sock < 0)
@@ -104,11 +98,10 @@ void	serverCore::startServer(Server* serv)
 	setNonBlocking(serv_sock);
 	if (listen(serv_sock, 5) < 0)
 		throw (std::runtime_error("Failed to listen on server Socket."));
-		
-	if (!addToEpoll(serv_sock))
-		return;
+	addToEpoll(serv_sock);
 
 	_servers[serv_sock] = serv;
+	return true;
 }
 
 void serverCore::changeSocketState(int client_fd, int mode) 
@@ -117,8 +110,12 @@ void serverCore::changeSocketState(int client_fd, int mode)
 	ev.data.fd = client_fd;
 	ev.events = mode;
 
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, client_fd, &ev) == -1) 
-		std::cerr << "Error: could not mark fd " << client_fd << " as " << (mode == EPOLLIN ? "EPOLLIN\n" : "EPOLLOUT\n");
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, client_fd, &ev) == -1)
+	{
+		std::ostringstream s;
+		s << "\nError: could not mark fd " << client_fd << " as " << (mode == EPOLLIN ? "EPOLLIN.\n" : "EPOLLOUT.\n");
+		throw (std::runtime_error(s.str()));
+	}
 }
 
 void	serverCore::acceptNewClients(int server_fd)
@@ -128,37 +125,22 @@ void	serverCore::acceptNewClients(int server_fd)
 		struct sockaddr_in client_addr;
 		socklen_t client_len = sizeof(client_addr);
 		int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_len);
-
-		if (client_fd == -1) // /!\ CANT USE ERRNO /!\ to research 
-		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK) // All connections have been processed
-				return;
-			else 
-			{
-				std::cerr << "Internal Server Error: accept on server socket" << std::endl;
-				return;
-			}
-		}
+		if (client_fd == -1) // All connections have been processed (or server error but we can't check errno lol)
+			return;
 
 		setNonBlocking(client_fd);
+		addToEpoll(client_fd);
 
-		// Add the new client socket to the epoll interest list
-		_event.events = EPOLLIN;
-		_event.data.fd = client_fd;
-		if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_fd, &_event) == -1) 
-		{
-			std::cerr << "Error: epoll_ctl: client_fd" << std::endl;
-			close(client_fd);
-		}
+		std::map<int, Server*>::iterator it = _servers.find(server_fd);
+		if (it == _servers.end())
+			throw (std::runtime_error("\nClient trying to communicate with non-existing server."));
+		
 		clientData data;
 		data.clientSocket = client_fd;
 		data.size = 0;
 		data.requestComplete = false;
 		data.headerComplete = false;
 		data.sendingResponse = false;
-		std::map<int, Server*>::iterator it = _servers.find(server_fd);
-		if (it == _servers.end())
-			throw (std::runtime_error("\nServer cannot be found."));
 		data.request.setServer(it->second);
 		
 		_clients[client_fd] = data;
@@ -169,10 +151,8 @@ void	serverCore::acceptNewClients(int server_fd)
 int	serverCore::receiveRequest(int fd)
 {
 	ssize_t valread;
-
 	char buffer[BUFFER_SIZE];
 
-	// Read data from the client
 	if ((valread = recv(fd, buffer, BUFFER_SIZE, 0)) > 0)
 	{
 		_clients[fd].body.append(buffer, valread);
@@ -227,12 +207,13 @@ int	serverCore::receiveRequest(int fd)
 		removeClient(fd);
 		return -1;
 	}
-	else // internal server error ig
-	{
-		std::cerr << "Internal Server Error: recv" << std::endl;
-		removeClient(fd);
-		return -1;
-	}
+	else
+		throw (std::runtime_error("\nError: recv fail."));
+	// {
+	// 	std::cerr << "Internal Server Error: recv" << std::endl;
+	// 	removeClient(fd);
+	// 	return -1;
+	// }
 
 	return 0;
 }
@@ -243,30 +224,47 @@ void	serverCore::sendResponse(int client_fd)
 	ssize_t sent = send(client_fd, _clients[client_fd].body.c_str(), _clients[client_fd].size, 0); // do we need flags ???
 	if (sent < 0)
 	{
-		// std::cerr << BOLD RED "Error: failed to send data to client "  RESET << client_fd << std::endl;
 		removeClient(client_fd);
 		return;
 	}
 	else if (sent == remaining)
 	{
-		// std::cout << BOLD GREEN "Success: All data sent to client (" << sent << ")"  RESET << client_fd << std::endl;
 		resetDiscussion(client_fd) ; // clear data
-		// changeSocketState(client_fd, EPOLLIN);
 		removeClient(client_fd); // temporary : if we sent answer we kill the client after for cleanup
 	}
 	else 
 	{
-		// std::cout << BOLD CYAN "Success: " << sent << "/" << _clients[client_fd].size << "B sent to client "  RESET << client_fd << std::endl;
 		_clients[client_fd].body.erase(0, sent);
 		_clients[client_fd].size -= sent;
 	}
 }
 
-bool	serverCore::findServer(int fd)
+int	serverCore::getfd() const
+{
+	return _epoll_fd;
+}
+
+bool	serverCore::findServer(int fd) const
 {
 	if (_servers.find(fd) != _servers.end())
 		return true;
 	return false;
+}
+
+bool		serverCore::clientIsResponding(int client)
+{
+
+	return _clients[client].sendingResponse;
+}
+
+Request&	serverCore::getRequest(int client)
+{
+	return (_clients[client].request);
+}
+
+void		serverCore::changeClientState(int client)
+{
+	_clients[client].sendingResponse = true;
 }
 
 void		serverCore::setResponse(int fd, std::string& str, ssize_t len)

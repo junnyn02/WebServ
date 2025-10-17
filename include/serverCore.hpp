@@ -27,38 +27,34 @@ class serverCore
 {
 private:
 
+	int							_epoll_fd;
 	std::map<int, Server*>		_servers;
+	std::map<int, clientData>	_clients;
 	
+	void	addToEpoll(int);
+	void	setNonBlocking(int);
 	void	setSocket(Server*, int);
-	bool	addToEpoll(int);
-	void	startServer(Server*);
+	void	changeSocketState(int, int);
+
+	bool	startServer(Server*);
+
+	void	removeClient(int);
+	void	resetDiscussion(int);
 	
 public:
-	int			_epoll_fd;
-	struct epoll_event _event;
-	//allowed methods   allow_methods POST GET; (could do an int value and check binary (like 1==GET, 10==POST, 100==other etc))
-	
-	std::map<int, clientData>	_clients;
-
 	serverCore();
 	serverCore(std::vector<Config*>&);
 	~serverCore();
-	
-	void		serverError(std::string);
-	void		setNonBlocking(int);
-	void		changeSocketState(int, int);
 
 	void		acceptNewClients(int);
-
-	void		resetDiscussion(int);
-	void		removeClient(int);
-
 	int			receiveRequest(int);
-	// void		sendResponse(int);
-	void		sendResponse(int); //, std::string *); //,const std::vector<char> &);
-	// clientData	receiveRequest(int fd);
-	// void		sendResponse(clientData);
+	void		sendResponse(int);
 
-	bool		findServer(int);
+	int			getfd() const;
+	bool		findServer(int) const;
+	bool		clientIsResponding(int);
+	Request&	getRequest(int);
+
+	void		changeClientState(int);
 	void		setResponse(int, std::string&, ssize_t);
 };

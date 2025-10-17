@@ -14,7 +14,6 @@ void signalHandler(int sig)
 
 int	main(int ac, char** av)
 {
-	// Handle signal
     signal(SIGINT, signalHandler);
     signal(SIGPIPE, SIG_IGN);
 
@@ -34,14 +33,14 @@ int	main(int ac, char** av)
 		struct epoll_event events[MAX_EVENTS];
 		while (1)
 		{
-			int n_events = epoll_wait(serv._epoll_fd, events, MAX_EVENTS, 5000); // SET TIMEOUT (instead of -1)
+			int n_events = epoll_wait(serv.getfd(), events, MAX_EVENTS, 5000); // SET TIMEOUT (instead of -1)
 			if (n_events == -1)
 				throw (std::runtime_error("\nEpoll error: epoll_wait failed."));
 
 			for (int i = 0; i < n_events; i++) 
 			{
 				int client = events[i].data.fd;
-				// Event handling logic
+
 				if (serv.findServer(client)) // client is one of the server's fd -> new connection
 					serv.acceptNewClients(client);
 				else if (events[i].events & EPOLLIN)// Data received from an existing client
@@ -49,12 +48,12 @@ int	main(int ac, char** av)
 				else if (events[i].events & EPOLLOUT)
 				{
 					// serv._clients[client].request.printRequest();
-					if (!serv._clients[client].sendingResponse)
+					if (!serv.clientIsResponding(client))
 					{
-						ResponseBuilder	response(serv._clients[client].request);
+						ResponseBuilder	response(serv.getRequest(client));
 						std::string	resp = response.getHeader();
 						serv.setResponse(client, resp, resp.size());
-						serv._clients[client].sendingResponse = true;
+						serv.changeClientState(client);
 					}
 					serv.sendResponse(client);
 				}
