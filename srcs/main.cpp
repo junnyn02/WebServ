@@ -29,7 +29,7 @@ int	main(int ac, char** av)
 		ac == 2 ? config = av[1] : config = "default.conf";
 		Config	conf(config);
 		std::cout << BOLD GREEN"[PARSING DONE]" RESET << std::endl;
-		std::vector<Config*> servers = conf.getServer();
+		std::vector<Config*> servers = conf.getChild();
 		serverCore serv(servers);
 		std::cout << BOLD GREEN"[SERVER STARTED SUCCESSFULLY]" RESET << std::endl;
 

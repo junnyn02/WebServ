@@ -18,6 +18,7 @@ class ResponseBuilder
         std::string                         _filename;
         std::string                         _header;
         Server*                             _server;
+        std::vector<Location*>              _location;
 
     public:
         ResponseBuilder(const Request &);

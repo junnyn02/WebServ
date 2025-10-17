@@ -17,7 +17,7 @@ class Config
 		int									_body_size;
 		std::string							_file;
 		std::string							_context;
-		std::vector<Config*>				_child;
+		std::vector<Config*>				_child; //config -> servers -> locations
 		std::map<int, std::string>			_error_page;
 		std::map<std::string, std::string>	_parsed;
 
@@ -39,7 +39,7 @@ class Config
         virtual ~Config(void);
 
 		const int							&getBodySize(void) const;
-		const std::vector<Config*>			&getServer(void) const;
+		const std::vector<Config*>			&getChild(void) const; //getChild()
 		const std::map<int, std::string>	&getError(void) const;
 		const std::map<std::string, std::string>	&getInfo(void) const;
 };

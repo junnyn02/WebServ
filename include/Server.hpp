@@ -17,3 +17,5 @@ class Server : public Config
 
 		const int	&getPort(void) const;
 };
+
+// herite de config std::vector<Config*> et pour recuperer locations faire getChild()
