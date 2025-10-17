@@ -3,6 +3,8 @@
 #include "utils.hpp"
 #include "Request.hpp"
 #include "serverCore.hpp"
+#include "Config.hpp"
+#include "Location.hpp"
 
 class ResponseBuilder
 {
@@ -15,6 +17,8 @@ class ResponseBuilder
         std::string                         _body;
         std::string                         _filename;
         std::string                         _header;
+        Server*                             _server;
+        std::vector<Location*>              _location;
 
     public:
         ResponseBuilder(const Request &);
@@ -27,6 +31,9 @@ class ResponseBuilder
         void                    isDir(const std::string &);
         void                    isFile(const std::string &);
         void                    sendResponse(void);
+        
+        void                    setError(const std::string &);
+        void                    checkErrorPage(void);
         
         bool                    checkMime(void);        
         bool                    createFile(void);
