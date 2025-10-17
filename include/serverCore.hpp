@@ -3,6 +3,7 @@
 #include "utils.hpp"
 #include "Request.hpp"
 #include "Config.hpp"
+#include "Server.hpp"
 
 #define EXIT_FAILURE 1
 #define INTERNAL_SERVER_ERROR 500
