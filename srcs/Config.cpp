@@ -39,6 +39,7 @@ void Config::findHTTP(void)
 		++it;
 	if (it == _context.end() || *it != '{')
 		throw (std::runtime_error("Syntax (bracket) Error"));
+	// std::cout << *checkEnd(it) << std::endl;
 	std::string parsed(it, checkEnd(it));
 	_context = parsed;
 }
@@ -227,18 +228,26 @@ std::string::iterator	Config::checkEnd(std::string::iterator &it)
 	while (tmp != _file.end())
 	{
 		//check si les brackets sont commentes ?
-		if (*tmp == '{' && checkComment(_file, std::distance(_file.begin(), tmp)))
+		if (*tmp == '#' || (*tmp == '/' && *(tmp + 1) == '/'))
+		{
+			while (tmp != _file.end() && *tmp != '\n')
+				++tmp;
+			if (tmp == _file.end())
+				throw (std::runtime_error("Syntax (bracket Error)"));
+		}
+		if (*tmp == '{')
 			count += 1;
-		if (*tmp == '}' && checkComment(_file, std::distance(_file.begin(), tmp)) && count > 0)
+		else if (*tmp == '}' && count > 0)
 			count -= 1;
-		else if (*tmp == '}' && checkComment(_file, std::distance(_file.begin(), tmp)) && count == 0)
+		else if (*tmp == '}' && count == 0)
 		{
 			last = tmp + 1;
 			return last;
 		}
 		++tmp;
 	}
-	if (count != 0)
+	std::cout << count << std::endl;
+	if (count != 0 || tmp == _file.end())
 		throw (std::runtime_error("Syntax (bracket) Error"));
 	return last;
 }
@@ -255,7 +264,7 @@ bool	Config::checkComment(std::string &str, const size_t &found)
 
 }
 
-const std::vector<Config*>	&Config::getServer(void) const
+const std::vector<Config*>	&Config::getChild(void) const
 {
 	return (this->_child);
 }
