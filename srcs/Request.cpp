@@ -80,6 +80,11 @@ const std::string& Request::getBody() const
 	return (_body);
 }
 
+Server	*Request::getServer() const
+{
+	return (_server);
+}
+
 int Request::getSize() const
 {
 	return (_size);

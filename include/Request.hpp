@@ -53,6 +53,9 @@ class Request
 		const std::string& getType() const;
 		const std::string& getName() const;
 		const std::string& getBody() const;
+
+		Server		*getServer() const;
+
 		int getSize() const;
 		int getStatus() const;
 		const std::map<std::string, std::string>& getInfo(void) const;

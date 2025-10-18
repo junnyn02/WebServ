@@ -14,18 +14,52 @@ ResponseBuilder::ResponseBuilder(const Request &request) : _request(request)
     _mime.insert(std::pair<std::string, std::string>(".jpg", "image/jpeg"));
     _mime.insert(std::pair<std::string, std::string>(".gif", "image/gif"));
     _mime.insert(std::pair<std::string, std::string>(".txt", "text/plain"));
+    _server = _request.getServer(); //Server recuperer de Request
+    std::vector<Config*> locations = _server->getChild(); //getChild();
+    for (size_t i = 0; i < locations.size(); i++)
+    {
+        _location.push_back(dynamic_cast<Location *>(locations[i]));
+        std::cout << i << ": " << _location[i]->getUri() << std::endl;
+    }
+    std::map<std::string, std::string> info = _location[0]->getInfo();
+    std::cout << "[LOCATION 0]" << std::endl;
+    for (std::map<std::string, std::string>::iterator it = info.begin(); it != info.end(); ++it)
+        std::cout << "\t" << it->first << " : " << it->second << std::endl;
+    info = _location[1]->getInfo();
+    std::cout << "[LOCATION 1]" << std::endl;
+    for (std::map<std::string, std::string>::iterator it = info.begin(); it != info.end(); ++it)
+        std::cout << "\t" << it->first << " : " << it->second << std::endl;
+    std::map<std::string, std::string>::iterator found = info.find("alias");
+    if (found != info.end())
+        std::cout << "[ALIAS]=" << found->second << std::endl;
+    if (_request.getStatus() != 0)
+        checkErrorPage();
     sendResponse();
-    // std::cout << "[BODY SIZE]: " << _body.size() << std::endl;
-    // std::cout << "[CONTENT BODY]:\n" << _body.data() << std::endl; 
 }
 
 ResponseBuilder::~ResponseBuilder()
 {
 }
 
-const std::string  ResponseBuilder::getCode(void) const
+void    ResponseBuilder::checkErrorPage(void)
 {
-    return (this->_code);
+    std::cout << "DO SMTHG" << std::endl;
+    // std::vector<Config*> locations = _server->getChild();
+    // std::vector<Location*> location;
+    // for (size_t i = 0; i < locations.size(); i++)
+    // {
+    //     location.push_back(dynamic_cast<Location *>(locations[i]));
+    //     // std::map<int, std::string> error = location->getError();
+    //     // std::map<int, std::string>::const_iterator found = error.find(_request.getStatus());
+    //     // if (found != error.end())
+    //     //     return (setError(found->second));
+    //     std::cout << location[i]->getUri() << std::endl;
+    // }
+}
+
+void    ResponseBuilder::setError(const std::string &)
+{
+    std::cout << "* SO SMTHG *" << std::endl;
 }
 
 void    ResponseBuilder::sendResponse(void)
@@ -355,4 +389,9 @@ const std::string   ResponseBuilder::getDir(void) const
         return std::string(buffer);
     else
         return std::string("Error");
+}
+
+const std::string  ResponseBuilder::getCode(void) const
+{
+    return (this->_code);
 }
