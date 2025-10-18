@@ -14,13 +14,8 @@ $hire   = isset($_GET['hire']) ? "Yes" : "No";
     <div class="block">
         <h1>Thank you for your feedback!</h1>
         <p><strong>You rated my portfolio:</strong> <?php echo $rating; ?></p>
-		<?php if ($hire == "Yes") :
-		?>
-			<p><strong>You said you would hire me! My contact information is on the website.</strong></p>
-		<?php else : ?>
-			<p><strong>You said you would not hire. Too bad :/</strong></p>
-		<?php endif; ?>
-		<a href="index.html" class="lien-perso">⬅ Back to Portfolio</a>
+		<p><strong>You said you would hire me:</strong> <?php echo $hire; ?></p>
+		<a href="/index.html" class="lien-perso">⬅ Back to Portfolio</a>
     </div>
 
     <div class="toggle-container">

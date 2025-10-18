@@ -506,3 +506,25 @@ body.dark-mode input[type="range"],
 body.dark-mode input[type="radio"] {
   accent-color: #6a798b;
 }
+
+/*Link row at the bottom of main block */
+.link-row {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.link-row .lien-perso {
+  margin: 0;
+  font-weight: 400;
+  text-decoration: none;
+  color: var(--link-color);
+  transition: color 0.3s ease;
+}
+
+.link-row .lien-perso:hover {
+  text-decoration: underline;
+  color: var(--text-color);
+}

@@ -19,19 +19,19 @@ ResponseBuilder::ResponseBuilder(const Request &request) : _request(request)
     for (size_t i = 0; i < locations.size(); i++)
     {
         _location.push_back(dynamic_cast<Location *>(locations[i]));
-        std::cout << i << ": " << _location[i]->getUri() << std::endl;
+        //std::cout << i << ": " << _location[i]->getUri() << std::endl;
     }
     std::map<std::string, std::string> info = _location[0]->getInfo();
-    std::cout << "[LOCATION 0]" << std::endl;
-    for (std::map<std::string, std::string>::iterator it = info.begin(); it != info.end(); ++it)
-        std::cout << "\t" << it->first << " : " << it->second << std::endl;
+    // std::cout << "[LOCATION 0]" << std::endl;
+    // for (std::map<std::string, std::string>::iterator it = info.begin(); it != info.end(); ++it)
+        // std::cout << "\t" << it->first << " : " << it->second << std::endl;
     info = _location[1]->getInfo();
-    std::cout << "[LOCATION 1]" << std::endl;
-    for (std::map<std::string, std::string>::iterator it = info.begin(); it != info.end(); ++it)
-        std::cout << "\t" << it->first << " : " << it->second << std::endl;
-    std::map<std::string, std::string>::iterator found = info.find("alias");
-    if (found != info.end())
-        std::cout << "[ALIAS]=" << found->second << std::endl;
+    // std::cout << "[LOCATION 1]" << std::endl;
+    // for (std::map<std::string, std::string>::iterator it = info.begin(); it != info.end(); ++it)
+    //     std::cout << "\t" << it->first << " : " << it->second << std::endl;
+    //std::map<std::string, std::string>::iterator found = info.find("alias");
+    // if (found != info.end())
+    //     std::cout << "[ALIAS]=" << found->second << std::endl;
     if (_request.getStatus() != 0)
         checkErrorPage();
     sendResponse();

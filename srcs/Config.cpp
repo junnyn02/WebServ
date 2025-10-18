@@ -246,7 +246,7 @@ std::string::iterator	Config::checkEnd(std::string::iterator &it)
 		}
 		++tmp;
 	}
-	std::cout << count << std::endl;
+	//std::cout << count << std::endl;
 	if (count != 0 || tmp == _file.end())
 		throw (std::runtime_error("Syntax (bracket) Error"));
 	return last;

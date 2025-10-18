@@ -1,4 +1,4 @@
-#include "../include/CGI.hpp"
+#include "CGI.hpp"
 
 std::string getPathInfo(const std::string& uri)
 {
@@ -31,19 +31,33 @@ void printEnv(std::vector<std::string>& env)
 	}
 }
 
+std::string getRoot()
+{
+	char buff[1096];
+	if (getcwd(buff, sizeof(buff)) != NULL)
+		return std::string(buff);
+	else
+		return "";
+}
+
 void getEnv(const Request& request, std::vector<std::string>& env)
 {
-	printConfig(request.getInfo());
-	std::map<std::string, std::string> config = request.getInfo();
 	env.push_back("REQUEST_METHOD=" + request.getMethod());
 	std::string name = getScriptName(request.getURI());
 	env.push_back("SCRIPT_NAME=" + name);
-	std::map<std::string, std::string>::iterator it = config.find("root");			//will probably change to alias
-	env.push_back("SCRIPT_FILENAME=" + it->second + name);							//root + filename -> conf
+	std::string root = getRoot();
+	env.push_back("SCRIPT_FILENAME=" + root + name);						//root + filename -> conf
 	env.push_back("GATEWAY_INTERFACE=CGI/1.1");
 	env.push_back("REMOTE_ADDR=127.0.0.1");					//check
-	env.push_back("SERVER_NAME=localhost");					//check config
-	env.push_back("SERVER_PORT=8080");
+	Server* serv = request.getServer();
+	std::map<std::string, std::string> config = serv->getInfo();
+	std::map<std::string, std::string>::iterator it = config.find("server_name");
+	env.push_back("SERVER_NAME=" + it->second);
+	std::stringstream itoa;
+	itoa << serv->getPort();
+	std::string port;
+	itoa >> port;
+	env.push_back("SERVER_PORT=8080" + port);
 	env.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	env.push_back("SERVER_SOFTWARE=Webserv/1.0");
 	env.push_back("REDIRECT_STATUS=200");

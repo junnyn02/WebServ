@@ -9,7 +9,7 @@
 <body>
     <div class="block">
         <h1>Create your profile</h1>
-        <form id="register" action="/cgi-bin/register.php" method="post" class="form-container">
+        <form id="register" action="/cgi-bin/profile.php" method="post" class="form-container">
             <div class="form-group">
                 <label for="first_name">First Name</label>
                 <input id="first_name" name="first_name" type="text" required>
@@ -24,12 +24,6 @@
                 <label for="login">42 Login</label>
                 <input id="login" name="login" type="text" required>
             </div>
-
-            <div class="form-group checkbox-group">
-                <input id="consent" name="consent" type="checkbox">
-                <label for="consent">I consent to share my data</label>
-            </div>
-
             <button type="submit" class="submit-btn">Post</button>
         </form>
         <a href="index.html" class="lien-perso">⬅ Back to Portfolio</a>

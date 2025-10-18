@@ -2,8 +2,6 @@
 $firstName = $_POST['first_name'] ?? '';
 $lastName  = $_POST['last_name'] ?? '';
 $login     = $_POST['login'] ?? '';
-$consent   = isset($_POST['consent']) ? "Yes" : "No"; //box only appears in POST if checked
-// modify so no profile if consent is not given
 $firstName = htmlspecialchars($firstName, ENT_QUOTES, 'UTF-8');
 $lastName  = htmlspecialchars($lastName, ENT_QUOTES, 'UTF-8');
 $login     = htmlspecialchars($login, ENT_QUOTES, 'UTF-8');
@@ -22,10 +20,8 @@ $login     = htmlspecialchars($login, ENT_QUOTES, 'UTF-8');
         <p><strong>First Name:</strong> <?php echo $firstName; ?></p>
         <p><strong>Last Name:</strong> <?php echo $lastName; ?></p>
         <p><strong>42 Login:</strong> <?php echo $login; ?></p>
-        <p><strong>Consent to share data:</strong> <?php echo $consent; ?></p>
-
-        <a href="register.html" class="lien-perso">⬅ Register another profile</a>
-        <a href="index.html" class="lien-perso">⬅ Back to Portfolio</a>
+        <a href="/register.html" class="lien-perso">⬅ Register another profile</a>
+        <a href="/index.html" class="lien-perso">⬅ Back to Portfolio</a>
     </div>
 
     <div class="toggle-container">

@@ -22,11 +22,11 @@ Location::Location(const std::string &uri, const std::string &context, const int
 	// for (std::map<int, std::string>::iterator it = _error_page.begin(); it != _error_page.end(); ++it)
 		// std::cout << it->first << " = " << it->second << std::endl;
 	parseLocation();
-	std::cout << YELLOW "[LOCATION INFO]: " RESET << _uri << std::endl;
-	for (std::map<std::string, std::string>::iterator it = _parsed.begin(); it != _parsed.end(); ++it)
-		std::cout << '\t' << it->first << " = " << it->second << std::endl;
-	for (std::vector<std::string>::iterator it = _method.begin(); it != _method.end(); ++it)
-		std::cout << '\t' << *it << std::endl;
+	//std::cout << YELLOW "[LOCATION INFO]: " RESET << _uri << std::endl;
+	// for (std::map<std::string, std::string>::iterator it = _parsed.begin(); it != _parsed.end(); ++it)
+	// 	std::cout << '\t' << it->first << " = " << it->second << std::endl;
+	// for (std::vector<std::string>::iterator it = _method.begin(); it != _method.end(); ++it)
+	// 	std::cout << '\t' << *it << std::endl;
 }
 
 void	Location::parseLocation(void)
